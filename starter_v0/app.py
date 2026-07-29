@@ -209,14 +209,17 @@ def apply_custom_css() -> None:
 # Utility functions
 # ============================================================
 
-def json_text(value: Any) -> str:
-    """Convert an object to readable JSON."""
-    return json.dumps(
+def json_text(value: Any, *, max_chars: int | None = None) -> str:
+    """Convert an object to readable JSON, optionally truncated."""
+    text = json.dumps(
         value,
         ensure_ascii=False,
         indent=2,
         default=str,
     )
+    if max_chars is not None and len(text) > max_chars:
+        return text[:max_chars] + "\n...<truncated>"
+    return text
 
 
 def get_event_status(result: Any) -> str:
@@ -367,8 +370,11 @@ def tool_results_message(
     return {
         "role": "user",
         "content": (
+            # Firecrawl/Tavily results are full page text. Feeding them back
+            # untruncated costs 10-25k tokens per round and burns a daily token
+            # quota in a handful of searches. chat.py caps this at 24000 chars.
             "TOOL_RESULTS_JSON:\n"
-            f"{json_text(events)}\n\n"
+            f"{json_text(events, max_chars=24000)}\n\n"
             "Use only these tool results. "
             "If the user asked for a digest and the items are ready, "
             "call the formatting tool. Otherwise answer the user directly "

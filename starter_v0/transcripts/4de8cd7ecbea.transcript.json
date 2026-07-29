@@ -1,0 +1,51 @@
+{
+  "session_id": "4de8cd7ecbea",
+  "updated_at": "2026-07-29T12:07:53",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Tìm trên web tin AI hôm nay và tóm tắt những điểm nổi bật."
+    },
+    {
+      "role": "assistant",
+      "content": "Không thể hoàn thành yêu cầu vì provider đang gặp lỗi. Hãy kiểm tra API key, quota hoặc cấu hình model.",
+      "run_id": "v6_20260729T120753_450856",
+      "status": "provider_error",
+      "tool_events": []
+    }
+  ],
+  "runs": [
+    {
+      "run_id": "v6_20260729T120753_450856",
+      "created_at": "2026-07-29T12:07:53",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "version": "v6",
+      "artifact_version": "v6+pda77501bcfdf+teda24430e0a6",
+      "prompt_hash": "da77501bcfdfe51b37735ca9b1f6ee360de380627ee239df6e5db543963b86a2",
+      "tools_hash": "eda24430e0a60f1bfc80399ffb3813ccfde89b0ce74af181d3f0dc64663077be",
+      "status": "provider_error",
+      "user_input": "Tìm trên web tin AI hôm nay và tóm tắt những điểm nổi bật.",
+      "assistant_text": "Không thể hoàn thành yêu cầu vì provider đang gặp lỗi. Hãy kiểm tra API key, quota hoặc cấu hình model.",
+      "tool_events": [],
+      "rounds": [
+        {
+          "round": 1,
+          "assistant_text": null,
+          "tool_calls": [],
+          "tool_results": [],
+          "provider_duration_ms": 0.87,
+          "provider_error": {
+            "type": "RuntimeError",
+            "message": "Install live provider dependency first: pip install openai"
+          }
+        }
+      ],
+      "total_duration_ms": 0.89,
+      "error": {
+        "type": "RuntimeError",
+        "message": "Install live provider dependency first: pip install openai"
+      }
+    }
+  ]
+}

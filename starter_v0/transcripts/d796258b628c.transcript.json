@@ -1,0 +1,51 @@
+{
+  "session_id": "d796258b628c",
+  "updated_at": "2026-07-29T12:10:16",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Tìm trên web tin AI hôm nay và tóm tắt những điểm nổi bật."
+    },
+    {
+      "role": "assistant",
+      "content": "Không thể hoàn thành yêu cầu vì provider đang gặp lỗi. Hãy kiểm tra API key, quota hoặc cấu hình model.",
+      "run_id": "v6_20260729T121002_ae6bb2",
+      "status": "provider_error",
+      "tool_events": []
+    }
+  ],
+  "runs": [
+    {
+      "run_id": "v6_20260729T121002_ae6bb2",
+      "created_at": "2026-07-29T12:10:16",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "version": "v6",
+      "artifact_version": "v6+pda77501bcfdf+teda24430e0a6",
+      "prompt_hash": "da77501bcfdfe51b37735ca9b1f6ee360de380627ee239df6e5db543963b86a2",
+      "tools_hash": "eda24430e0a60f1bfc80399ffb3813ccfde89b0ce74af181d3f0dc64663077be",
+      "status": "provider_error",
+      "user_input": "Tìm trên web tin AI hôm nay và tóm tắt những điểm nổi bật.",
+      "assistant_text": "Không thể hoàn thành yêu cầu vì provider đang gặp lỗi. Hãy kiểm tra API key, quota hoặc cấu hình model.",
+      "tool_events": [],
+      "rounds": [
+        {
+          "round": 1,
+          "assistant_text": null,
+          "tool_calls": [],
+          "tool_results": [],
+          "provider_duration_ms": 13738.37,
+          "provider_error": {
+            "type": "RateLimitError",
+            "message": "Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kyp0t10afv9r40669g32xqr9` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 198211, Requested 2115. Please try again in 2m20.832s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}"
+          }
+        }
+      ],
+      "total_duration_ms": 13738.43,
+      "error": {
+        "type": "RateLimitError",
+        "message": "Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kyp0t10afv9r40669g32xqr9` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 198211, Requested 2115. Please try again in 2m20.832s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}"
+      }
+    }
+  ]
+}

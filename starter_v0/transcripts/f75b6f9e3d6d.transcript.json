@@ -1,0 +1,51 @@
+{
+  "session_id": "f75b6f9e3d6d",
+  "updated_at": "2026-07-29T11:57:29",
+  "messages": [
+    {
+      "role": "user",
+      "content": "hãy cho tôi biết 5 tin mới nhất trên hacker news"
+    },
+    {
+      "role": "assistant",
+      "content": "Không thể hoàn thành yêu cầu vì provider đang gặp lỗi. Hãy kiểm tra API key, quota hoặc cấu hình model.",
+      "run_id": "v0_20260729T115729_4b9576",
+      "status": "provider_error",
+      "tool_events": []
+    }
+  ],
+  "runs": [
+    {
+      "run_id": "v0_20260729T115729_4b9576",
+      "created_at": "2026-07-29T11:57:29",
+      "provider": "gemini",
+      "model": "gemini-3.5-flash",
+      "version": "v0",
+      "artifact_version": "v0+pf0c107a9d7a1+t011c271ef0bb",
+      "prompt_hash": "f0c107a9d7a14032c948d642d7c36f2a85cb6d69a099530093a874c94d472446",
+      "tools_hash": "011c271ef0bbad1e19a5d7b660b2ed481b7d72950f1faa8a0798c3bdd8784ee1",
+      "status": "provider_error",
+      "user_input": "hãy cho tôi biết 5 tin mới nhất trên hacker news",
+      "assistant_text": "Không thể hoàn thành yêu cầu vì provider đang gặp lỗi. Hãy kiểm tra API key, quota hoặc cấu hình model.",
+      "tool_events": [],
+      "rounds": [
+        {
+          "round": 1,
+          "assistant_text": null,
+          "tool_calls": [],
+          "tool_results": [],
+          "provider_duration_ms": 0.51,
+          "provider_error": {
+            "type": "RuntimeError",
+            "message": "Install live provider dependency first: pip install google-genai"
+          }
+        }
+      ],
+      "total_duration_ms": 0.52,
+      "error": {
+        "type": "RuntimeError",
+        "message": "Install live provider dependency first: pip install google-genai"
+      }
+    }
+  ]
+}
