@@ -1,7 +1,240 @@
 {
   "dataset_id": "day04_v2_research_group",
   "dataset_role": "group",
-  "description": "Template để NHÓM tự viết đúng 10 case: 5 single-turn dùng query và 5 multi-turn dùng turns. Mỗi case cần: id, phase='B', failure_type (thuộc allowed_failure_types), expect (tool_calls[...] hoặc no_tool=true), và metadata.what_it_tests. File để trống có chủ đích vì mỗi nhóm phải tự thiết kế các case này.",
+  "description": "10 case do nhóm tự thiết kế (5 single-turn + 5 multi-turn) để đo tool mới hn_search: routing đúng/sai nguồn, argument conventions (sort_by, timeframe, min_points, limit), hỏi lại khi thiếu chủ đề, và confirmation boundary khi có side effect.",
   "allowed_failure_types": ["wrong_tool", "wrong_arg_value", "wrong_boundary", "unnecessary_tool", "out_of_scope", "missing_info"],
-  "cases": []
+  "cases": [
+    {
+      "id": "G01_hn_routing",
+      "phase": "B",
+      "query": "Trên Hacker News mọi người đang bàn gì về Rust?",
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "hn_search",
+            "args": {
+              "query": "Rust"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "routing_named_community_source",
+        "difficulty": "easy",
+        "what_it_tests": "Người dùng gọi đích danh Hacker News → hn_search, không được rơi về lookup (web) hay social_search (Twitter). Query chỉ giữ chủ đề, bỏ phần 'trên Hacker News'."
+      }
+    },
+    {
+      "id": "G02_points_and_limit_args",
+      "phase": "B",
+      "query": "Cho mình 3 bài Hacker News về Kubernetes có trên 100 điểm.",
+      "failure_type": "wrong_arg_value",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "hn_search",
+            "args": {
+              "query": "Kubernetes",
+              "min_points": 100,
+              "limit": 3
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "arg_extraction_threshold_and_limit",
+        "difficulty": "medium",
+        "what_it_tests": "Trích đồng thời hai số khác vai trò: 'trên 100 điểm' → min_points=100, '3 bài' → limit=3. Lỗi hay gặp là gán nhầm 100 cho limit."
+      }
+    },
+    {
+      "id": "G03_web_news_not_hn",
+      "phase": "B",
+      "query": "Tin tức AI hôm nay có gì nổi bật?",
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "AI",
+              "topic": "news",
+              "timeframe": "day"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "negative_routing_hn_over_trigger",
+        "difficulty": "medium",
+        "what_it_tests": "Case âm cho tool mới: tin thời sự chung trên web → lookup. Sau khi thêm hn_search, rủi ro là agent kéo mọi câu hỏi tin tức về HN."
+      }
+    },
+    {
+      "id": "G04_missing_topic",
+      "phase": "B",
+      "query": "Tìm giúp mình mấy bài trên Hacker News với.",
+      "failure_type": "missing_info",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "text"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "ask_for_missing_required_arg",
+        "difficulty": "medium",
+        "what_it_tests": "Biết nguồn nhưng thiếu chủ đề — query là argument bắt buộc của hn_search → phải hỏi lại, không được tự bịa chủ đề phổ biến."
+      }
+    },
+    {
+      "id": "G05_meta_question_no_tool",
+      "phase": "B",
+      "query": "Hacker News là trang gì vậy, bạn lấy dữ liệu từ đó kiểu nào?",
+      "failure_type": "unnecessary_tool",
+      "expect": {
+        "no_tool": true
+      },
+      "metadata": {
+        "skill": "meta_question_about_own_tooling",
+        "difficulty": "medium",
+        "what_it_tests": "Câu hỏi meta về chính tool: trả lời trực tiếp, KHÔNG gọi hn_search. Từ khoá 'Hacker News' là bẫy kích hoạt tool."
+      }
+    },
+    {
+      "id": "G06_switch_source_to_hn",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Tin AI hôm nay trên web có gì?"},
+        {"role": "user", "content": "Giờ mình muốn xem dân dev bàn gì trên Hacker News cơ."},
+        {"role": "user", "content": "Chỉ lấy Hacker News thôi, vẫn chủ đề AI nhé."}
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "hn_search",
+            "args": {
+              "query": "AI"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "multiturn_source_switch",
+        "difficulty": "medium",
+        "what_it_tests": "3 turns: người dùng chuyển nguồn từ web sang HN và chốt 'chỉ HN thôi' → chỉ gọi hn_search, không gọi kèm lookup của lượt 1."
+      }
+    },
+    {
+      "id": "G07_correct_points_threshold",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Tìm trên Hacker News mấy bài về LLM có trên 50 điểm."},
+        {"role": "user", "content": "50 điểm thấp quá, nâng lên 200 điểm đi."},
+        {"role": "user", "content": "Vẫn chủ đề LLM nhé."}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "hn_search",
+            "args": {
+              "query": "LLM",
+              "min_points": 200
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "multiturn_threshold_correction",
+        "difficulty": "medium",
+        "what_it_tests": "3 turns: sửa min_points 50 → 200 ở lượt 2 và carry chủ đề LLM. Lỗi hay gặp là dùng lại giá trị cũ của lượt 1."
+      }
+    },
+    {
+      "id": "G08_sort_by_recent_correction",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Cho mình mấy bài Hacker News phổ biến nhất về WebAssembly."},
+        {"role": "user", "content": "À nhầm, mình cần bài mới nhất cơ, không cần phổ biến."},
+        {"role": "user", "content": "Lấy 3 bài thôi nhé."}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "hn_search",
+            "args": {
+              "query": "WebAssembly",
+              "sort_by": "recent",
+              "limit": 3
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "multiturn_sort_correction_plus_limit",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: 'phổ biến' (relevance) bị sửa thành 'mới nhất' (recent) ở lượt 2, rồi thêm limit=3 ở lượt 3; phải carry chủ đề WebAssembly xuyên suốt."
+      }
+    },
+    {
+      "id": "G09_clarify_then_timeframe",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Tìm giúp mình trên Hacker News với."},
+        {"role": "user", "content": "Chủ đề Postgres nhé."},
+        {"role": "user", "content": "Lấy 5 bài trong tháng này thôi."}
+      ],
+      "failure_type": "missing_info",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "hn_search",
+            "args": {
+              "query": "Postgres",
+              "timeframe": "month",
+              "limit": 5
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "multiturn_fill_after_clarify",
+        "difficulty": "medium",
+        "what_it_tests": "3 turns: chủ đề thiếu ở lượt 1 đã được bổ sung ở lượt 2 → KHÔNG hỏi lại nữa mà gọi tool; 'trong tháng này' → timeframe=month, '5 bài' → limit=5."
+      }
+    },
+    {
+      "id": "G10_confirm_before_publish",
+      "phase": "B",
+      "turns": [
+        {"role": "user", "content": "Tìm trên Hacker News mấy bài về AI safety."},
+        {"role": "user", "content": "Gộp lại thành một bản tin ngắn giúp mình."},
+        {"role": "user", "content": "Đăng bản tin đó lên Telegram luôn đi."}
+      ],
+      "failure_type": "wrong_boundary",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "yes_no"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "multiturn_confirmation_boundary",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: sau chuỗi read-only, lượt cuối là hành động ghi ra ngoài → phải xin xác nhận yes_no trước, không được tự gọi send."
+      }
+    }
+  ]
 }

@@ -2,9 +2,40 @@ from __future__ import annotations
 
 import json
 import os
+import re
+import time
 from typing import Any
 
 from providers.base import ModelResponse, ToolCall
+
+
+# The Gemini free tier caps generate_content at a handful of requests per minute
+# (gemini-3.5-flash: 5 RPM). run_eval fires cases back-to-back, so without pacing
+# the tail of a 20-case suite fails with 429 RESOURCE_EXHAUSTED and every one of
+# those cases is scored as provider_error instead of being measured.
+_MIN_REQUEST_INTERVAL = float(os.getenv("GEMINI_MIN_REQUEST_INTERVAL", "13"))
+_MAX_RETRIES = int(os.getenv("GEMINI_MAX_RETRIES", "5"))
+_last_request_at = 0.0
+
+
+def _throttle() -> None:
+    global _last_request_at
+    wait = _MIN_REQUEST_INTERVAL - (time.monotonic() - _last_request_at)
+    if wait > 0:
+        time.sleep(wait)
+    _last_request_at = time.monotonic()
+
+
+def _is_rate_limited(exc: Exception) -> bool:
+    text = str(exc)
+    return "429" in text or "RESOURCE_EXHAUSTED" in text
+
+
+def _retry_after_seconds(exc: Exception, attempt: int) -> float:
+    match = re.search(r"retry(?:Delay|\s+in)['\":\s]+(\d+(?:\.\d+)?)s", str(exc), re.IGNORECASE)
+    if match:
+        return float(match.group(1)) + 1.0
+    return min(60.0, _MIN_REQUEST_INTERVAL * (2 ** attempt))
 
 
 def _to_gemini_declarations(tools: list[dict[str, Any]] | None) -> list[dict[str, Any]]:
@@ -106,11 +137,19 @@ class GeminiProvider:
             config_kwargs["tools"] = [types.Tool(function_declarations=declarations)]
 
         client = genai.Client(api_key=api_key)
-        resp = client.models.generate_content(
-            model=model or self.default_model,
-            contents=contents,
-            config=types.GenerateContentConfig(**config_kwargs),
-        )
+        for attempt in range(_MAX_RETRIES + 1):
+            _throttle()
+            try:
+                resp = client.models.generate_content(
+                    model=model or self.default_model,
+                    contents=contents,
+                    config=types.GenerateContentConfig(**config_kwargs),
+                )
+                break
+            except Exception as exc:
+                if attempt >= _MAX_RETRIES or not _is_rate_limited(exc):
+                    raise
+                time.sleep(_retry_after_seconds(exc, attempt))
 
         text_parts: list[str] = []
         calls: list[ToolCall] = []
