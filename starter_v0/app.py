@@ -1,593 +1,1430 @@
 from __future__ import annotations
 
-import csv
+import html
 import json
+import time
+from datetime import datetime
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 import streamlit as st
-import streamlit.components.v1 as components
+
+from env_loader import load_lab_env
+from providers import make_provider
+from providers.base import ToolCall
+from tools import TOOL_FUNCTIONS, load_tool_declarations, to_openai_tools
+from versioning import build_artifact_version
 
 
-ROOT = Path(__file__).resolve().parent
-HTML_TEMPLATE = ROOT / "demo.html"
+# ============================================================
+# Application configuration
+# ============================================================
+
+ROOT = Path(__file__).parent
 ARTIFACTS_DIR = ROOT / "artifacts"
-RUNS_DIR = ROOT / "runs"
 TRANSCRIPTS_DIR = ROOT / "transcripts"
-DATA_DIR = ROOT / "data"
+
+SYSTEM_PROMPT_PATH = ARTIFACTS_DIR / "system_prompt.md"
+TOOLS_PATH = ARTIFACTS_DIR / "tools.yaml"
+
+load_lab_env(ROOT)
+
+st.set_page_config(
+    page_title="Research Agent Lab",
+    page_icon="🔬",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
 
 
-st.set_page_config(page_title="Research Agent Demo", layout="wide", initial_sidebar_state="expanded")
+# ============================================================
+# UI styling
+# ============================================================
 
-
-def read_json(path: Path, default: Any = None) -> Any:
-    if not path.exists():
-        return default
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except Exception:
-        return default
-
-
-def read_text(path: Path, default: str = "") -> str:
-    if not path.exists():
-        return default
-    try:
-        return path.read_text(encoding="utf-8")
-    except Exception:
-        return default
-
-
-def list_json(directory: Path) -> list[Path]:
-    if not directory.exists():
-        return []
-    return sorted(directory.glob("*.json"), key=lambda item: item.stat().st_mtime, reverse=True)
-
-
-def latest(paths: list[Path]) -> Path | None:
-    return paths[0] if paths else None
-
-
-def csv_rows(path: Path) -> list[dict[str, str]]:
-    if not path.exists():
-        return []
-    with path.open("r", encoding="utf-8", newline="") as file:
-        return list(csv.DictReader(file))
-
-
-def safe_json_text(value: Any) -> str:
-    text = json.dumps(value, ensure_ascii=False, indent=2, default=str)
-    return text.replace("</", "<\\/")
-
-
-def load_demo_template() -> str:
-    html = read_text(HTML_TEMPLATE)
-    if not html:
-        raise FileNotFoundError(f"Missing template: {HTML_TEMPLATE}")
-    return html
-
-
-def select_run_payload(selected_name: str | None) -> dict[str, Any] | None:
-    if not selected_name:
-        return None
-    path = RUNS_DIR / selected_name
-    return read_json(path, default=None)
-
-
-def select_transcript_payload(selected_name: str | None) -> dict[str, Any] | None:
-    if not selected_name:
-        return None
-    path = TRANSCRIPTS_DIR / selected_name
-    return read_json(path, default=None)
-
-
-def build_run_meta(version_rows: list[dict[str, str]], selected_run: dict[str, Any] | None, run_files: list[Path], transcript_files: list[Path]) -> dict[str, dict[str, Any]]:
-    metas: dict[str, dict[str, Any]] = {}
-
-    for row in version_rows:
-        version = row.get("version", "")
-        if not version:
-            continue
-        metas.setdefault(version, {
-            "runId": "",
-            "artifact": row.get("artifact_version", ""),
-            "promptHash": row.get("prompt_hash", ""),
-            "toolsHash": row.get("tools_hash", ""),
-            "provider": "",
-            "model": "",
-            "generatedAt": "",
-            "phaseSuite": "",
-            "transcript": "",
-        })
-
-    for path in run_files:
-        payload = read_json(path, default=None) or {}
-        version = str(payload.get("version") or "").strip()
-        if not version:
-            continue
-        metas[version] = {
-            "runId": payload.get("run_id", path.stem),
-            "artifact": payload.get("artifact_version", ""),
-            "promptHash": payload.get("prompt_hash", ""),
-            "toolsHash": payload.get("tools_hash", ""),
-            "provider": payload.get("provider", ""),
-            "model": payload.get("model", ""),
-            "generatedAt": payload.get("generated_at", ""),
-            "phaseSuite": f"{payload.get('phase', '')} / {payload.get('suite', '')}".strip(" /"),
-            "transcript": "",
+def apply_custom_css() -> None:
+    st.markdown(
+        """
+        <style>
+        .block-container {
+            max-width: 1480px;
+            padding-top: 1.4rem;
+            padding-bottom: 3rem;
         }
 
-    transcript_by_version: dict[str, str] = {}
-    for path in transcript_files:
-        payload = read_json(path, default=None) or {}
-        version = str(payload.get("version") or "").strip()
-        if version and version not in transcript_by_version:
-            transcript_by_version[version] = path.name
-
-    for version, meta in metas.items():
-        meta["transcript"] = transcript_by_version.get(version, meta.get("transcript", ""))
-
-    if selected_run:
-        version = str(selected_run.get("version") or "").strip()
-        if version:
-            metas[version] = {
-                "runId": selected_run.get("run_id", ""),
-                "artifact": selected_run.get("artifact_version", ""),
-                "promptHash": selected_run.get("prompt_hash", ""),
-                "toolsHash": selected_run.get("tools_hash", ""),
-                "provider": selected_run.get("provider", ""),
-                "model": selected_run.get("model", ""),
-                "generatedAt": selected_run.get("generated_at", ""),
-                "phaseSuite": f"{selected_run.get('phase', '')} / {selected_run.get('suite', '')}".strip(" /"),
-                "transcript": transcript_by_version.get(version, ""),
-            }
-    return metas
-
-
-def choose_version(version_rows: list[dict[str, str]], run_payload: dict[str, Any] | None) -> str:
-    if run_payload and run_payload.get("version"):
-        return str(run_payload["version"])
-    if version_rows:
-        return str(version_rows[-1].get("version") or "v0")
-    return "v0"
-
-
-def derive_metrics(run_payload: dict[str, Any] | None) -> list[dict[str, Any]]:
-    summary = (run_payload or {}).get("summary", {})
-    version = str((run_payload or {}).get("version") or "v0")
-    return [{
-        "v": version,
-        "case": float(summary.get("case_accuracy") or 0.0),
-        "routing": float(summary.get("tool_routing_accuracy") or 0.0),
-        "args": float(summary.get("argument_accuracy") or 0.0),
-        "multiturn": float(summary.get("multiturn_accuracy") or 0.0),
-        "errors": int(summary.get("provider_error_cases") or 0),
-        "note": f"Selected run {run_payload.get('run_id', '') if run_payload else ''} from actual run JSON.",
-    }]
-
-
-def case_text(item: dict[str, Any]) -> str:
-    return str(item.get("query") or item.get("input") or "")
-
-
-def derive_scenarios(run_payload: dict[str, Any] | None, transcript_payload: dict[str, Any] | None, eval_group: dict[str, Any]) -> dict[str, Any]:
-    scenarios: dict[str, Any] = {}
-    results = (run_payload or {}).get("results", [])
-
-    def build_from_result(result_item: dict[str, Any], fallback_title: str, fallback_user: str) -> dict[str, Any]:
-        result = result_item.get("result", {})
-        calls = result.get("actual_tool_calls") or []
-        trace = []
-        for index, call in enumerate(calls, start=1):
-            trace.append({
-                "round": index,
-                "tool": call.get("name", "tool"),
-                "status": "success" if result.get("passed", True) else "error",
-                "duration": "1.0s",
-                "args": call.get("args", {}),
-                "result": "; ".join(result.get("failures") or []) or "ok",
-                "desc": str(result_item.get("metadata", {}).get("what_it_tests", "")),
-            })
-        assistant_text = result.get("actual_text") or result.get("text") or f"Scenario for {fallback_title}"
-        return {
-            "user": fallback_user,
-            "assistant": assistant_text,
-            "trace": trace,
+        [data-testid="stSidebar"] {
+            border-right: 1px solid rgba(128, 128, 128, 0.18);
         }
 
-    passing = next((item for item in results if item.get("result", {}).get("passed") and item.get("result", {}).get("actual_tool_calls")), None)
-    missing = next((item for item in results if item.get("result", {}).get("failure_type") == "missing_info"), None)
-    confirm = next((item for item in results if item.get("result", {}).get("actual_tool_calls") and any(call.get("name") == "clarify" for call in item["result"].get("actual_tool_calls", []))), None)
-    error = next((item for item in results if item.get("result", {}).get("failure_type") == "provider_error" or any("error" in str(ev.get("result", {})).lower() for ev in item.get("tool_results", []))), None)
+        .hero-section {
+            padding: 1.5rem 1.7rem;
+            margin-bottom: 1.2rem;
+            border: 1px solid rgba(128, 128, 128, 0.22);
+            border-radius: 22px;
+            background:
+                linear-gradient(
+                    135deg,
+                    color-mix(in srgb, var(--primary-color) 13%, transparent),
+                    transparent 58%
+                );
+        }
 
-    if passing:
-        scenarios["normal"] = build_from_result(passing, "normal", case_text(passing))
-    if missing:
-        scenarios["missing"] = build_from_result(missing, "missing", case_text(missing))
-    if confirm:
-        scenarios["confirm"] = build_from_result(confirm, "confirm", case_text(confirm))
-    if error:
-        scenarios["error"] = build_from_result(error, "error", case_text(error))
+        .hero-eyebrow {
+            margin-bottom: 0.45rem;
+            color: var(--primary-color);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
 
-    if not scenarios and transcript_payload:
-        turns = transcript_payload.get("turns", [])
-        if turns:
-            first = turns[0]
-            scenarios["normal"] = {
-                "user": first.get("user", ""),
-                "assistant": first.get("assistant_text") or "No response available.",
-                "trace": [],
-            }
+        .hero-title {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 750;
+            line-height: 1.2;
+        }
 
-    group_cases = eval_group.get("cases", [])
-    scenario_labels = {
-        "normal": (group_cases[0].get("query") if group_cases else "Tìm tin AI hôm nay và tóm tắt 5 ý chính."),
-        "missing": (group_cases[10].get("turns", [{}])[0].get("content") if len(group_cases) > 10 and group_cases[10].get("turns") else "Tóm tắt bài viết này giúp mình."),
-        "confirm": "Gửi bản tổng hợp này lên Telegram giúp mình.",
-        "error": "Trigger lỗi tool (demo).",
+        .hero-subtitle {
+            max-width: 850px;
+            margin-top: 0.55rem;
+            margin-bottom: 0;
+            color: rgba(128, 128, 128, 0.95);
+            font-size: 1rem;
+        }
+
+        .chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.55rem;
+            margin-top: 1rem;
+        }
+
+        .info-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.35rem 0.68rem;
+            border: 1px solid rgba(128, 128, 128, 0.22);
+            border-radius: 999px;
+            background: color-mix(
+                in srgb,
+                var(--background-color) 90%,
+                var(--primary-color)
+            );
+            font-size: 0.82rem;
+        }
+
+        .section-label {
+            margin-top: 0.4rem;
+            margin-bottom: 0.7rem;
+            font-size: 0.83rem;
+            font-weight: 700;
+            letter-spacing: 0.055em;
+            text-transform: uppercase;
+            color: rgba(128, 128, 128, 0.95);
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.28rem 0.62rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .status-success {
+            color: #137333;
+            background: rgba(52, 168, 83, 0.15);
+        }
+
+        .status-error {
+            color: #b3261e;
+            background: rgba(234, 67, 53, 0.15);
+        }
+
+        .status-waiting {
+            color: #8a4b00;
+            background: rgba(251, 188, 4, 0.18);
+        }
+
+        .status-neutral {
+            color: rgba(128, 128, 128, 1);
+            background: rgba(128, 128, 128, 0.12);
+        }
+
+        .tool-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 0.55rem;
+        }
+
+        .tool-title {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .tool-meta {
+            margin-top: 0.2rem;
+            color: rgba(128, 128, 128, 0.95);
+            font-size: 0.82rem;
+        }
+
+        .run-id {
+            overflow-wrap: anywhere;
+            color: rgba(128, 128, 128, 0.95);
+            font-family: monospace;
+            font-size: 0.78rem;
+        }
+
+        div[data-testid="stMetric"] {
+            padding: 0.85rem 1rem;
+            border: 1px solid rgba(128, 128, 128, 0.18);
+            border-radius: 16px;
+        }
+
+        div[data-testid="stChatMessage"] {
+            border-radius: 18px;
+        }
+
+        .stButton > button {
+            border-radius: 12px;
+        }
+
+        .stTextInput input,
+        .stSelectbox [data-baseweb="select"] > div {
+            border-radius: 12px;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+# ============================================================
+# Utility functions
+# ============================================================
+
+def json_text(value: Any) -> str:
+    """Convert an object to readable JSON."""
+    return json.dumps(
+        value,
+        ensure_ascii=False,
+        indent=2,
+        default=str,
+    )
+
+
+def get_event_status(result: Any) -> str:
+    if isinstance(result, dict):
+        if result.get("awaiting_user"):
+            return "waiting"
+        if result.get("error"):
+            return "error"
+
+    return "success"
+
+
+def status_label(status: str) -> tuple[str, str]:
+    labels = {
+        "success": ("Thành công", "status-success"),
+        "error": ("Lỗi", "status-error"),
+        "waiting": ("Chờ người dùng", "status-waiting"),
+        "answered": ("Đã trả lời", "status-success"),
+        "waiting_for_user": ("Chờ bổ sung", "status-waiting"),
+        "provider_error": ("Lỗi provider", "status-error"),
+        "max_tool_rounds": ("Vượt giới hạn round", "status-error"),
     }
 
-    return {"scenarios": scenarios, "scenario_labels": scenario_labels}
+    return labels.get(status, (status, "status-neutral"))
 
 
-def build_demo_data() -> dict[str, Any]:
-    run_files = list_json(RUNS_DIR)
-    transcript_files = list_json(TRANSCRIPTS_DIR)
-    version_rows = csv_rows(ARTIFACTS_DIR / "version_log.csv")
-    eval_group = read_json(DATA_DIR / "eval_group.json", default={}) or {}
+def create_run_id(version_label: str) -> str:
+    timestamp = datetime.now().strftime("%Y%m%dT%H%M%S")
+    suffix = uuid4().hex[:6]
+    return f"{version_label}_{timestamp}_{suffix}"
 
-    selected_run_path = latest(run_files)
-    selected_transcript_path = latest(transcript_files)
-    selected_run = read_json(selected_run_path, default=None) if selected_run_path else None
-    selected_transcript = read_json(selected_transcript_path, default=None) if selected_transcript_path else None
 
-    run_meta = build_run_meta(version_rows, selected_run, run_files, transcript_files)
-    metrics = []
-    if selected_run:
-        metrics = derive_metrics(selected_run)
+def initialize_session_state() -> None:
+    defaults = {
+        "session_id": uuid4().hex[:12],
+        "messages": [],
+        "history": [],
+        "runs": [],
+    }
+
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+
+
+def clear_session() -> None:
+    st.session_state.session_id = uuid4().hex[:12]
+    st.session_state.messages = []
+    st.session_state.history = []
+    st.session_state.runs = []
+
+
+def transcript_payload() -> dict[str, Any]:
+    return {
+        "session_id": st.session_state.session_id,
+        "updated_at": datetime.now().isoformat(timespec="seconds"),
+        "messages": st.session_state.messages,
+        "runs": st.session_state.runs,
+    }
+
+
+def save_transcript() -> Path:
+    TRANSCRIPTS_DIR.mkdir(parents=True, exist_ok=True)
+
+    transcript_path = (
+        TRANSCRIPTS_DIR
+        / f"{st.session_state.session_id}.transcript.json"
+    )
+
+    transcript_path.write_text(
+        json_text(transcript_payload()),
+        encoding="utf-8",
+    )
+
+    return transcript_path
+
+
+# ============================================================
+# Tool execution
+# ============================================================
+
+def execute_tool_call(
+    call: ToolCall,
+    round_index: int,
+    call_index: int,
+) -> dict[str, Any]:
+    started_at = time.perf_counter()
+
+    func = TOOL_FUNCTIONS.get(call.name)
+
+    if not func:
+        result: Any = {
+            "error": "unknown_tool",
+            "message": f"No implementation found for tool '{call.name}'.",
+        }
     else:
-        metrics = [{"v": "v0", "case": 0.0, "routing": 0.0, "args": 0.0, "multiturn": 0.0, "errors": 0, "note": "No run JSON available yet."}]
+        try:
+            result = func(**call.args)
+        except Exception as exc:
+            result = {
+                "error": type(exc).__name__,
+                "message": str(exc),
+            }
 
-    scenario_bundle = derive_scenarios(selected_run, selected_transcript, eval_group)
+    duration_ms = round(
+        (time.perf_counter() - started_at) * 1000,
+        2,
+    )
 
     return {
-        "provider": (selected_run or {}).get("provider", "local"),
-        "model": (selected_run or {}).get("model", "demo"),
-        "selected_version": choose_version(version_rows, selected_run),
-        "run_meta": run_meta,
-        "metrics": metrics,
-        "scenarios": scenario_bundle["scenarios"],
-        "scenario_labels": scenario_bundle["scenario_labels"],
-        "welcome_message": "Chào bạn. Mình là research agent. Chạy một scenario ở tab Chat để xem trace thật.",
+        "round": round_index,
+        "call_index": call_index,
+        "tool": call.name,
+        "args": call.args,
+        "result": result,
+        "status": get_event_status(result),
+        "duration_ms": duration_ms,
     }
 
 
-def build_runtime_script(data: dict[str, Any]) -> str:
-    data_json = safe_json_text(data)
-    return f"""
-<script>
-const DEMO_DATA = {data_json};
-const RUN_META = DEMO_DATA.run_meta || {{}};
-const METRICS = DEMO_DATA.metrics || [];
-const SCENARIOS = DEMO_DATA.scenarios || {{}};
-const INITIAL_VERSION = DEMO_DATA.selected_version || Object.keys(RUN_META)[0] || 'v0';
+def assistant_tool_message(
+    response_text: str | None,
+    calls: list[ToolCall],
+) -> dict[str, str]:
+    call_summary = [
+        {
+            "name": call.name,
+            "args": call.args,
+        }
+        for call in calls
+    ]
 
-let state = {{ trace: [], round: 0, busy: false }};
-const stream = document.getElementById('chatStream');
+    content = response_text or "I will call the selected tool(s)."
 
-function escapeHtml(s) {{
-  return String(s).replace(/[&<>"']/g, c => ({{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}}[c]));
-}}
-
-function scrollBottom() {{ stream.scrollTop = stream.scrollHeight; }}
-function setBusy(b) {{
-  state.busy = b;
-  document.getElementById('sendBtn').disabled = b;
-  document.getElementById('composerInput').disabled = b;
-  document.querySelectorAll('.scenario-btn').forEach(btn => btn.disabled = b);
-}}
-function addUserMsg(text) {{
-  const row = document.createElement('div');
-  row.className = 'msg-row user';
-  row.innerHTML = `<div class="bubble">${{escapeHtml(text)}}</div><div class="avatar user">U</div>`;
-  stream.appendChild(row); scrollBottom();
-}}
-function addAgentMsg(text) {{
-  const row = document.createElement('div');
-  row.className = 'msg-row agent';
-  row.innerHTML = `<div class="avatar agent">A</div><div class="bubble">${{text}}</div>`;
-  stream.appendChild(row); scrollBottom();
-}}
-function addTyping() {{
-  const row = document.createElement('div');
-  row.className = 'msg-row agent'; row.id = 'typingRow';
-  row.innerHTML = `<div class="avatar agent">A</div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>`;
-  stream.appendChild(row); scrollBottom();
-}}
-function removeTyping() {{ const r = document.getElementById('typingRow'); if (r) r.remove(); }}
-
-function addToolCard(tool, args, status, resultText, duration) {{
-  const row = document.createElement('div');
-  row.className = 'msg-row agent';
-  const id = 'tool-' + Math.random().toString(36).slice(2, 8);
-  row.innerHTML = `
-    <div style="width:26px;flex-shrink:0;"></div>
-    <div class="tool-card" id="${{id}}">
-      <div class="tool-card-head">
-        <span class="tool-name">${{tool}}</span>
-        <span class="badge running" data-role="badge">running</span>
-        <span class="tool-meta" data-role="meta">round ${{state.round}}</span>
-      </div>
-      <details class="mini" open><summary>arguments</summary>
-        <pre class="code">${{escapeHtml(JSON.stringify(args, null, 2))}}</pre>
-      </details>
-      <details class="mini" data-role="result-wrap"><summary>result</summary>
-        <pre class="code" data-role="result"></pre>
-      </details>
-    </div>`;
-  stream.appendChild(row); scrollBottom();
-  return id;
-}}
-function resolveToolCard(id, status, resultText, duration) {{
-  const card = document.getElementById(id);
-  if (!card) return;
-  const badge = card.querySelector('[data-role="badge"]');
-  badge.className = 'badge ' + status;
-  badge.textContent = status;
-  card.querySelector('[data-role="meta"]').textContent = `round ${{state.round}} · ${{duration || ''}}`;
-  card.querySelector('[data-role="result"]').textContent = resultText || '';
-}}
-
-function pushTrace(entry) {{
-  state.trace.push(entry);
-  document.getElementById('traceCount').textContent = state.trace.length;
-}}
-function resetTrace() {{
-  state.trace = [];
-  state.round = 0;
-  document.getElementById('traceCount').textContent = 0;
-  document.getElementById('traceContent').innerHTML = `<div class="empty-state"><div class="glyph">⎋</div>Chưa có tool call nào. Chạy một scenario ở tab Chat để xem trace tại đây.</div>`;
-}}
-function renderTraceView() {{
-  const el = document.getElementById('traceContent');
-  if (state.trace.length === 0) {{ resetTrace(); return; }}
-  el.innerHTML = `<div class="timeline">` + state.trace.map(t => `
-    <div class="t-item">
-      <div class="t-dot ${{t.status}}">${{t.status === 'success' ? '✓' : t.status === 'error' ? '✕' : '…'}}</div>
-      <div class="t-card">
-        <div class="t-card-top">
-          <span class="t-round">round ${{t.round}}</span>
-          <span class="t-toolname">${{escapeHtml(t.tool || '')}}</span>
-          <span class="badge ${{t.status}}">${{escapeHtml(t.status || '')}}</span>
-          <span class="t-duration">${{escapeHtml(t.duration || '')}}</span>
-        </div>
-        <div class="t-desc">${{escapeHtml(t.desc || '')}}</div>
-        <details class="mini"><summary>arguments</summary><pre class="code">${{escapeHtml(JSON.stringify(t.args || {{}}, null, 2))}}</pre></details>
-        <details class="mini"><summary>result</summary><pre class="code">${{escapeHtml(t.result || '')}}</pre></details>
-      </div>
-    </div>
-  `).join('') + `</div>`;
-}}
-
-function renderRunDetails() {{
-  const v = document.getElementById('versionSelect').value;
-  const m = RUN_META[v] || {{}};
-  document.getElementById('runContent').innerHTML = `
-    <div class="kv-panel">
-      <h3>Run identity</h3>
-      <div class="kv-row"><div class="kv-key">version</div><div class="kv-val"><span class="ver-tag">${{escapeHtml(v)}}</span></div></div>
-      <div class="kv-row"><div class="kv-key">run_id</div><div class="kv-val">${{escapeHtml(m.runId || '—')}}</div></div>
-      <div class="kv-row"><div class="kv-key">artifact_version</div><div class="kv-val hash">${{escapeHtml(m.artifact || '—')}}</div></div>
-      <div class="kv-row"><div class="kv-key">prompt_hash</div><div class="kv-val hash">${{escapeHtml(m.promptHash || '—')}}</div></div>
-      <div class="kv-row"><div class="kv-key">tools_hash</div><div class="kv-val hash">${{escapeHtml(m.toolsHash || '—')}}</div></div>
-      <div class="kv-row"><div class="kv-key">generated_at</div><div class="kv-val">${{escapeHtml(m.generatedAt || '—')}}</div></div>
-    </div>
-    <div class="kv-panel">
-      <h3>Provider / Model</h3>
-      <div class="kv-row"><div class="kv-key">provider</div><div class="kv-val">${{escapeHtml(m.provider || '—')}}</div></div>
-      <div class="kv-row"><div class="kv-key">model</div><div class="kv-val">${{escapeHtml(m.model || '—')}}</div></div>
-      <div class="kv-row"><div class="kv-key">phase / suite</div><div class="kv-val">${{escapeHtml(m.phaseSuite || '—')}}</div></div>
-    </div>
-    <div class="kv-panel">
-      <h3>Transcript</h3>
-      <div class="kv-row"><div class="kv-key">file</div><div class="kv-val">${{escapeHtml(m.transcript || '—')}}</div></div>
-    </div>
-    <p class="copy-hint">Dữ liệu được đọc từ run JSON, transcript JSON và version log thật.</p>
-  `;
-}}
-
-function renderMetrics() {{
-  const current = document.getElementById('versionSelect').value;
-  const rows = METRICS.map(m => {{
-    const active = m.v === current ? 'style="background:var(--panel-2)"' : '';
-    return `
-    <tr ${{active}}>
-      <td><span class="ver-tag">${{escapeHtml(m.v)}}</span></td>
-      <td>${{bar(m.case)}}</td>
-      <td>${{bar(m.routing)}}</td>
-      <td>${{bar(m.args)}}</td>
-      <td>${{bar(m.multiturn)}}</td>
-      <td>${{m.errors > 0 ? `<span class="flag">${{m.errors}} ⚠</span>` : '0'}}</td>
-    </tr>`;
-  }}).join('');
-  function bar(val) {{
-    const pct = Math.round((Number(val) || 0) * 100);
-    return `<div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:${{pct}}%"></div></div><span>${{pct}}%</span></div>`;
-  }}
-  const noteRow = METRICS.find(m => m.v === current) || {{}};
-  document.getElementById('metricsContent').innerHTML = `
-    <table class="metrics">
-      <thead><tr>
-        <th>Version</th><th>Case accuracy</th><th>Tool routing</th><th>Argument accuracy</th><th>Multiturn</th><th>Provider errors</th>
-      </tr></thead>
-      <tbody>${{rows}}</tbody>
-    </table>
-    <div class="note-box"><strong>${{escapeHtml(current)}}</strong> — ${{escapeHtml(noteRow.note || 'No note available.')}}</div>
-  `;
-}}
-
-function onVersionChange() {{
-  const v = document.getElementById('versionSelect').value;
-  const meta = RUN_META[v] || {{}};
-  const provider = meta.provider || DEMO_DATA.provider || 'local';
-  const model = meta.model || DEMO_DATA.model || 'demo';
-  document.getElementById('providerLabel').textContent = `${{provider}} · ${{model}}`;
-  document.getElementById('providerDot').className = 'dot' + (v === 'v0' ? ' err' : '');
-  renderRunDetails();
-  renderMetrics();
-}}
-
-function initScenarioButtons() {{
-  const labels = DEMO_DATA.scenario_labels || {{}};
-  const mapping = {{
-    normal: labels.normal || 'Tìm tin AI hôm nay và tóm tắt 5 ý chính.',
-    missing: labels.missing || 'Tóm tắt bài viết này giúp mình.',
-    confirm: labels.confirm || 'Gửi bản tổng hợp này lên Telegram giúp mình.',
-    error: labels.error || 'Trigger lỗi tool (demo).'
-  }};
-  document.querySelectorAll('.scenario-btn').forEach(btn => {{
-    const kind = (btn.getAttribute('onclick') || '').match(/runScenario\\('([^']+)'\\)/);
-    if (!kind) return;
-    const label = mapping[kind[1]];
-    if (label) btn.innerHTML = escapeHtml(label).replace(/\\n/g, '<br/>');
-  }});
-}}
-
-function replayScenario(scenarioKey) {{
-  const scenario = SCENARIOS[scenarioKey];
-  if (!scenario) return;
-  setBusy(true);
-  addTyping();
-  setTimeout(() => {{
-    removeTyping();
-    addUserMsg(scenario.user || '');
-    state.trace = [];
-    state.round = 0;
-    document.getElementById('traceCount').textContent = 0;
-    const steps = scenario.trace || [];
-    let delay = 0;
-    steps.forEach((step, index) => {{
-      delay += Number(step.delay_ms || 350);
-      setTimeout(() => {{
-        state.round = step.round || (index + 1);
-        const cardId = addToolCard(step.tool || 'tool', step.args || {{}}, step.status || 'success', step.result || '', step.duration || '');
-        setTimeout(() => {{
-          resolveToolCard(cardId, step.status || 'success', step.result || '', step.duration || '');
-          pushTrace({{
-            round: state.round,
-            tool: step.tool || 'tool',
-            status: step.status || 'success',
-            duration: step.duration || '',
-            args: step.args || {{}},
-            result: step.result || '',
-            desc: step.desc || ''
-          }});
-          renderTraceView();
-        }}, Math.max(60, Number(step.resolve_delay_ms || 120)));
-      }}, delay);
-    }});
-    setTimeout(() => {{
-      addAgentMsg(scenario.assistant || scenario.final || '—');
-      setBusy(false);
-    }}, delay + 420);
-  }}, 280);
-}}
-
-function runScenario(kind) {{
-  if (state.busy) return;
-  if (SCENARIOS[kind]) {{
-    replayScenario(kind);
-    return;
-  }}
-  addUserMsg(kind);
-  addAgentMsg('Chưa có dữ liệu scenario cho lựa chọn này.');
-}}
-
-function handleComposerKey(e) {{
-  if (e.key === 'Enter' && !e.shiftKey) {{ e.preventDefault(); sendFromComposer(); }}
-}}
-function sendFromComposer() {{
-  const inp = document.getElementById('composerInput');
-  const text = inp.value.trim();
-  if (!text || state.busy) return;
-  inp.value = '';
-  const lowered = text.toLowerCase();
-  if (lowered.includes('telegram') || lowered.includes('gửi')) return runScenario('confirm');
-  if (lowered.includes('tóm tắt') && !lowered.includes('http')) return runScenario('missing');
-  if (lowered.includes('lỗi') || lowered.includes('error')) return runScenario('error');
-  return runScenario('normal');
-}}
-
-function resetChat() {{
-  stream.innerHTML = '';
-  resetTrace();
-  setBusy(false);
-  addAgentMsg(DEMO_DATA.welcome_message || 'Chào bạn. Mình là research agent.');
-}}
-
-function switchTab(tab) {{
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById(`view-${{tab}}`).classList.add('active');
-  document.querySelector(`.tab-btn[data-tab="${{tab}}"]`).classList.add('active');
-  if (tab === 'trace') renderTraceView();
-  if (tab === 'run') renderRunDetails();
-  if (tab === 'metrics') renderMetrics();
-}}
-
-document.getElementById('versionSelect').value = INITIAL_VERSION;
-document.getElementById('versionSelect').addEventListener('change', onVersionChange);
-document.querySelectorAll('.scenario-btn').forEach(btn => btn.addEventListener('click', () => {{}}));
-initScenarioButtons();
-onVersionChange();
-resetTrace();
-resetChat();
-</script>
-"""
+    return {
+        "role": "assistant",
+        "content": (
+            f"{content}\n\n"
+            "TOOL_CALLS_JSON:\n"
+            f"{json_text(call_summary)}"
+        ),
+    }
 
 
-def render_demo_page(data: dict[str, Any]) -> str:
-    html = load_demo_template()
-    start = html.find("<script>")
-    end = html.rfind("</script>")
-    if start == -1 or end == -1 or end < start:
-        raise ValueError("demo.html does not contain a script block to replace")
-    prefix = html[:start]
-    suffix = html[end + len("</script>"):]
-    return prefix + build_runtime_script(data) + suffix
+def tool_results_message(
+    events: list[dict[str, Any]],
+) -> dict[str, str]:
+    return {
+        "role": "user",
+        "content": (
+            "TOOL_RESULTS_JSON:\n"
+            f"{json_text(events)}\n\n"
+            "Use only these tool results. "
+            "If the user asked for a digest and the items are ready, "
+            "call the formatting tool. Otherwise answer the user directly "
+            "with cited sources when available."
+        ),
+    }
 
+
+# ============================================================
+# Agent loop
+# ============================================================
+
+def run_agent_loop(
+    provider: Any,
+    messages: list[dict[str, str]],
+    tools: list[dict[str, Any]],
+    model: str | None,
+    max_tool_rounds: int = 4,
+) -> dict[str, Any]:
+    loop_started_at = time.perf_counter()
+
+    working_messages = list(messages)
+    rounds: list[dict[str, Any]] = []
+    all_tool_events: list[dict[str, Any]] = []
+
+    for round_index in range(1, max_tool_rounds + 1):
+        provider_started_at = time.perf_counter()
+
+        try:
+            response = provider.complete(
+                working_messages,
+                tools,
+                model=model,
+                temperature=0.0,
+            )
+        except Exception as exc:
+            provider_duration_ms = round(
+                (time.perf_counter() - provider_started_at) * 1000,
+                2,
+            )
+
+            rounds.append(
+                {
+                    "round": round_index,
+                    "assistant_text": None,
+                    "tool_calls": [],
+                    "tool_results": [],
+                    "provider_duration_ms": provider_duration_ms,
+                    "provider_error": {
+                        "type": type(exc).__name__,
+                        "message": str(exc),
+                    },
+                }
+            )
+
+            return {
+                "status": "provider_error",
+                "assistant_text": (
+                    "Không thể hoàn thành yêu cầu vì provider đang gặp lỗi. "
+                    "Hãy kiểm tra API key, quota hoặc cấu hình model."
+                ),
+                "error": {
+                    "type": type(exc).__name__,
+                    "message": str(exc),
+                },
+                "rounds": rounds,
+                "tool_events": all_tool_events,
+                "total_duration_ms": round(
+                    (time.perf_counter() - loop_started_at) * 1000,
+                    2,
+                ),
+            }
+
+        provider_duration_ms = round(
+            (time.perf_counter() - provider_started_at) * 1000,
+            2,
+        )
+
+        calls = response.tool_calls or []
+
+        round_record: dict[str, Any] = {
+            "round": round_index,
+            "assistant_text": response.text,
+            "tool_calls": [
+                {
+                    "name": call.name,
+                    "args": call.args,
+                }
+                for call in calls
+            ],
+            "tool_results": [],
+            "provider_duration_ms": provider_duration_ms,
+        }
+
+        # Agent has produced a final response.
+        if not calls:
+            rounds.append(round_record)
+
+            return {
+                "status": "answered",
+                "assistant_text": response.text or "",
+                "rounds": rounds,
+                "tool_events": all_tool_events,
+                "total_duration_ms": round(
+                    (time.perf_counter() - loop_started_at) * 1000,
+                    2,
+                ),
+            }
+
+        working_messages.append(
+            assistant_tool_message(response.text, calls)
+        )
+
+        non_clarification_events: list[dict[str, Any]] = []
+
+        for call_index, call in enumerate(calls, start=1):
+            event = execute_tool_call(
+                call=call,
+                round_index=round_index,
+                call_index=call_index,
+            )
+
+            round_record["tool_results"].append(event)
+            all_tool_events.append(event)
+
+            result = event.get("result", {})
+
+            if (
+                isinstance(result, dict)
+                and result.get("awaiting_user")
+            ):
+                question = (
+                    result.get("question")
+                    or call.args.get("question")
+                    or "Bạn vui lòng bổ sung thêm thông tin."
+                )
+
+                rounds.append(round_record)
+
+                return {
+                    "status": "waiting_for_user",
+                    "assistant_text": question,
+                    "rounds": rounds,
+                    "tool_events": all_tool_events,
+                    "total_duration_ms": round(
+                        (time.perf_counter() - loop_started_at) * 1000,
+                        2,
+                    ),
+                }
+
+            non_clarification_events.append(event)
+
+        rounds.append(round_record)
+
+        working_messages.append(
+            tool_results_message(non_clarification_events)
+        )
+
+    return {
+        "status": "max_tool_rounds",
+        "assistant_text": (
+            f"Agent đã dừng sau {max_tool_rounds} vòng gọi tool "
+            "để tránh vòng lặp không kiểm soát."
+        ),
+        "rounds": rounds,
+        "tool_events": all_tool_events,
+        "total_duration_ms": round(
+            (time.perf_counter() - loop_started_at) * 1000,
+            2,
+        ),
+    }
+
+
+# ============================================================
+# UI rendering functions
+# ============================================================
+
+def render_header(
+    provider_name: str,
+    model_name: str,
+    version_label: str,
+    tool_count: int,
+) -> None:
+    provider_safe = html.escape(provider_name)
+    model_safe = html.escape(model_name or "Default model")
+    version_safe = html.escape(version_label)
+
+    st.markdown(
+        f"""
+        <section class="hero-section">
+            <div class="hero-eyebrow">Day 04 · Research Agent Evaluation</div>
+
+            <h1 class="hero-title">
+                🔬 AI Research Agent Laboratory
+            </h1>
+
+            <p class="hero-subtitle">
+                Giao diện quan sát quá trình agent phân tích yêu cầu,
+                lựa chọn tool, truyền arguments, thực thi và tạo câu trả lời cuối.
+            </p>
+
+            <div class="chip-row">
+                <span class="info-chip">
+                    🧠 Provider: <strong>{provider_safe}</strong>
+                </span>
+
+                <span class="info-chip">
+                    ⚡ Model: <strong>{model_safe}</strong>
+                </span>
+
+                <span class="info-chip">
+                    🧬 Version: <strong>{version_safe}</strong>
+                </span>
+
+                <span class="info-chip">
+                    🧰 Tools: <strong>{tool_count}</strong>
+                </span>
+            </div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_status_pill(status: str) -> None:
+    label, css_class = status_label(status)
+
+    st.markdown(
+        f"""
+        <span class="status-pill {css_class}">
+            {html.escape(label)}
+        </span>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_tool_event(
+    event: dict[str, Any],
+    expanded: bool = False,
+) -> None:
+    tool_name = str(event.get("tool", "unknown_tool"))
+    event_status = str(event.get("status", "unknown"))
+    duration_ms = event.get("duration_ms", 0)
+    round_index = event.get("round", "?")
+    call_index = event.get("call_index", "?")
+
+    with st.container(border=True):
+        heading_col, status_col = st.columns(
+            [4, 1],
+            vertical_alignment="center",
+        )
+
+        with heading_col:
+            st.markdown(
+                f"""
+                <div class="tool-heading">
+                    <div>
+                        <p class="tool-title">
+                            🛠️ {html.escape(tool_name)}
+                        </p>
+                        <p class="tool-meta">
+                            Round {round_index}
+                            · Call {call_index}
+                            · {duration_ms} ms
+                        </p>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+        with status_col:
+            render_status_pill(event_status)
+
+        args_col, result_col = st.columns(2)
+
+        with args_col:
+            with st.expander(
+                "Arguments",
+                expanded=expanded,
+            ):
+                st.code(
+                    json_text(event.get("args", {})),
+                    language="json",
+                )
+
+        with result_col:
+            with st.expander(
+                "Result",
+                expanded=expanded or event_status == "error",
+            ):
+                result = event.get("result", {})
+
+                if event_status == "error":
+                    message = (
+                        result.get("message")
+                        if isinstance(result, dict)
+                        else str(result)
+                    )
+                    st.error(message or "Tool execution failed.")
+
+                st.code(
+                    json_text(result),
+                    language="json",
+                )
+
+
+def render_message(message: dict[str, Any]) -> None:
+    role = message.get("role", "assistant")
+    avatar = "👤" if role == "user" else "🤖"
+
+    with st.chat_message(role, avatar=avatar):
+        st.markdown(message.get("content", ""))
+
+        run_id = message.get("run_id")
+        status = message.get("status")
+
+        if role == "assistant" and (run_id or status):
+            metadata_cols = st.columns([1, 4])
+
+            with metadata_cols[0]:
+                if status:
+                    render_status_pill(status)
+
+            with metadata_cols[1]:
+                if run_id:
+                    st.markdown(
+                        f"""
+                        <div class="run-id">
+                            Run ID: {html.escape(str(run_id))}
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+
+        tool_events = message.get("tool_events", [])
+
+        if tool_events:
+            with st.expander(
+                f"Tool trace · {len(tool_events)} event(s)",
+                expanded=False,
+            ):
+                for event in tool_events:
+                    render_tool_event(event)
+
+
+def render_run_metrics(run: dict[str, Any]) -> None:
+    tool_events = run.get("tool_events", [])
+    rounds = run.get("rounds", [])
+
+    success_calls = sum(
+        1
+        for event in tool_events
+        if event.get("status") == "success"
+    )
+
+    error_calls = sum(
+        1
+        for event in tool_events
+        if event.get("status") == "error"
+    )
+
+    metric_cols = st.columns(4)
+
+    metric_cols[0].metric(
+        "Agent status",
+        status_label(run.get("status", "unknown"))[0],
+    )
+
+    metric_cols[1].metric(
+        "Tool calls",
+        len(tool_events),
+        delta=f"{success_calls} success",
+    )
+
+    metric_cols[2].metric(
+        "Rounds",
+        len(rounds),
+    )
+
+    metric_cols[3].metric(
+        "Duration",
+        f"{run.get('total_duration_ms', 0):,.0f} ms",
+        delta=f"{error_calls} errors" if error_calls else None,
+        delta_color="inverse",
+    )
+
+
+def tool_declaration_rows(
+    declarations: Any,
+) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+
+    if not isinstance(declarations, list):
+        return rows
+
+    for declaration in declarations:
+        if not isinstance(declaration, dict):
+            continue
+
+        function_data = declaration.get("function", {})
+        function_data = (
+            function_data
+            if isinstance(function_data, dict)
+            else {}
+        )
+
+        name = (
+            declaration.get("name")
+            or function_data.get("name")
+            or "unknown"
+        )
+
+        description = (
+            declaration.get("description")
+            or function_data.get("description")
+            or ""
+        )
+
+        parameters = (
+            declaration.get("parameters")
+            or function_data.get("parameters")
+            or {}
+        )
+
+        required = (
+            parameters.get("required", [])
+            if isinstance(parameters, dict)
+            else []
+        )
+
+        rows.append(
+            {
+                "Tool": name,
+                "Description": description,
+                "Required arguments": ", ".join(required),
+            }
+        )
+
+    return rows
+
+
+# ============================================================
+# Main application
+# ============================================================
 
 def main() -> None:
-    run_files = list_json(RUNS_DIR)
-    transcript_files = list_json(TRANSCRIPTS_DIR)
-    version_rows = csv_rows(ARTIFACTS_DIR / "version_log.csv")
-    selected_run_path = st.sidebar.selectbox(
-        "Run JSON",
-        ["(latest)"] + [path.name for path in run_files] if run_files else ["(none)"],
-        index=0,
+    apply_custom_css()
+    initialize_session_state()
+
+    # --------------------------------------------------------
+    # Validate artifact files
+    # --------------------------------------------------------
+
+    missing_files = [
+        path
+        for path in (SYSTEM_PROMPT_PATH, TOOLS_PATH)
+        if not path.exists()
+    ]
+
+    if missing_files:
+        st.error(
+            "Không tìm thấy artifact bắt buộc:\n\n"
+            + "\n".join(f"- `{path}`" for path in missing_files)
+        )
+        st.stop()
+
+    try:
+        system_prompt = SYSTEM_PROMPT_PATH.read_text(
+            encoding="utf-8"
+        )
+
+        tool_declarations = load_tool_declarations(TOOLS_PATH)
+        openai_tools = to_openai_tools(tool_declarations)
+
+    except Exception as exc:
+        st.error(
+            f"Không thể tải prompt hoặc tools.yaml: {exc}"
+        )
+        st.stop()
+
+    # --------------------------------------------------------
+    # Sidebar configuration
+    # --------------------------------------------------------
+
+    with st.sidebar:
+        st.markdown("## 🔬 Lab Control Panel")
+        st.caption(
+            "Cấu hình môi trường chạy và artifact version."
+        )
+
+        provider_name = st.selectbox(
+            "Provider",
+            [
+                "nvidia",
+                "gemini",
+                "openrouter",
+                "openai",
+                "anthropic",
+            ],
+            index=0,
+            help="Provider dùng để gọi model.",
+        )
+
+        version_label = st.text_input(
+            "Version label",
+            value="v0",
+            help="Ví dụ: v0, v1, v2 hoặc v3.",
+        ).strip() or "v0"
+
+        model_override = st.text_input(
+            "Model override",
+            value="",
+            placeholder="Để trống để dùng default model",
+        ).strip()
+
+        max_tool_rounds = st.slider(
+            "Maximum tool rounds",
+            min_value=1,
+            max_value=8,
+            value=4,
+            help="Giới hạn số vòng agent có thể gọi tool.",
+        )
+
+        show_trace_live = st.toggle(
+            "Mở Tool Trace sau khi chạy",
+            value=True,
+        )
+
+        st.divider()
+
+        artifact_version = build_artifact_version(
+            version_label,
+            SYSTEM_PROMPT_PATH,
+            TOOLS_PATH,
+        )
+
+        st.markdown("### Artifact identity")
+        st.code(
+            artifact_version.artifact_version,
+            language=None,
+        )
+
+        st.caption("Prompt hash")
+        st.code(
+            artifact_version.prompt_hash[:16],
+            language=None,
+        )
+
+        st.caption("Tools hash")
+        st.code(
+            artifact_version.tools_hash[:16],
+            language=None,
+        )
+
+        st.divider()
+
+        clear_col, new_col = st.columns(2)
+
+        with clear_col:
+            if st.button(
+                "Xóa chat",
+                use_container_width=True,
+            ):
+                clear_session()
+                st.rerun()
+
+        with new_col:
+            if st.button(
+                "Phiên mới",
+                use_container_width=True,
+            ):
+                clear_session()
+                st.rerun()
+
+        transcript_data = json_text(
+            transcript_payload()
+        )
+
+        st.download_button(
+            "⬇️ Tải transcript",
+            data=transcript_data,
+            file_name=(
+                f"{st.session_state.session_id}"
+                ".transcript.json"
+            ),
+            mime="application/json",
+            use_container_width=True,
+        )
+
+        st.caption(
+            f"Session: `{st.session_state.session_id}`"
+        )
+
+    # --------------------------------------------------------
+    # Provider initialization
+    # --------------------------------------------------------
+
+    provider = None
+    provider_setup_error: str | None = None
+
+    try:
+        provider = make_provider(provider_name)
+        selected_model = (
+            model_override
+            or getattr(provider, "default_model", None)
+            or "default"
+        )
+    except Exception as exc:
+        selected_model = model_override or "unavailable"
+        provider_setup_error = str(exc)
+
+    # --------------------------------------------------------
+    # Header and summary
+    # --------------------------------------------------------
+
+    render_header(
+        provider_name=provider_name,
+        model_name=selected_model,
+        version_label=version_label,
+        tool_count=len(tool_declarations),
     )
-    selected_transcript_path = st.sidebar.selectbox(
-        "Transcript JSON",
-        ["(latest)"] + [path.name for path in transcript_files] if transcript_files else ["(none)"],
-        index=0,
+
+    if provider_setup_error:
+        st.error(
+            "Provider chưa sẵn sàng: "
+            f"{provider_setup_error}"
+        )
+
+    # --------------------------------------------------------
+    # Main navigation
+    # --------------------------------------------------------
+
+    chat_tab, trace_tab, run_tab = st.tabs(
+        [
+            "💬 Agent Chat",
+            "🛠️ Tool Trace",
+            "📑 Run Details",
+        ]
     )
 
-    selected_run = latest(run_files) if selected_run_path == "(latest)" else select_run_payload(selected_run_path)
-    selected_transcript = latest(transcript_files) if selected_transcript_path == "(latest)" else select_transcript_payload(selected_transcript_path)
+    # ========================================================
+    # Chat tab
+    # ========================================================
 
-    data = build_demo_data()
-    if selected_run:
-        data["selected_version"] = selected_run.get("version") or data.get("selected_version")
-        data["provider"] = selected_run.get("provider", data.get("provider"))
-        data["model"] = selected_run.get("model", data.get("model"))
-        data["run_meta"].update(build_run_meta(version_rows, selected_run, run_files, transcript_files))
-        data["metrics"] = derive_metrics(selected_run)
-        scenarios = derive_scenarios(selected_run, selected_transcript, read_json(DATA_DIR / "eval_group.json", default={}) or {})
-        data["scenarios"] = scenarios["scenarios"]
-        data["scenario_labels"] = scenarios["scenario_labels"]
+    with chat_tab:
+        st.markdown(
+            '<div class="section-label">Demo scenarios</div>',
+            unsafe_allow_html=True,
+        )
 
-    html = render_demo_page(data)
-    components.html(html, height=1280, scrolling=True)
+        demo_prompt: str | None = None
+
+        prompt_col_1, prompt_col_2, prompt_col_3 = st.columns(3)
+
+        with prompt_col_1:
+            if st.button(
+                "🔎 Research bình thường",
+                use_container_width=True,
+            ):
+                demo_prompt = (
+                    "Tìm trên web tin AI hôm nay "
+                    "và tóm tắt những điểm nổi bật."
+                )
+
+        with prompt_col_2:
+            if st.button(
+                "❓ Thiếu URL",
+                use_container_width=True,
+            ):
+                demo_prompt = (
+                    "Tóm tắt bài viết này giúp mình."
+                )
+
+        with prompt_col_3:
+            if st.button(
+                "🛡️ Xác nhận hành động",
+                use_container_width=True,
+            ):
+                demo_prompt = (
+                    "Đăng bản tin này lên Telegram giúp mình."
+                )
+
+        st.divider()
+
+        if not st.session_state.messages:
+            st.info(
+                "Bắt đầu bằng một câu hỏi hoặc chọn "
+                "một kịch bản demo phía trên."
+            )
+
+        for message in st.session_state.messages:
+            render_message(message)
+
+        typed_input = st.chat_input(
+            "Nhập yêu cầu cho Research Agent..."
+        )
+
+        user_input = demo_prompt or typed_input
+
+        if user_input:
+            st.session_state.messages.append(
+                {
+                    "role": "user",
+                    "content": user_input,
+                }
+            )
+
+            with st.chat_message("user", avatar="👤"):
+                st.markdown(user_input)
+
+            if provider is None:
+                st.error(
+                    "Không thể chạy agent vì provider "
+                    "chưa được khởi tạo."
+                )
+                st.stop()
+
+            history_context = (
+                st.session_state.history[-10:]
+                if st.session_state.history
+                else []
+            )
+
+            input_messages = [
+                {
+                    "role": "system",
+                    "content": system_prompt,
+                },
+                *history_context,
+                {
+                    "role": "user",
+                    "content": user_input,
+                },
+            ]
+
+            run_id = create_run_id(version_label)
+
+            with st.chat_message(
+                "assistant",
+                avatar="🤖",
+            ):
+                with st.status(
+                    "Agent đang phân tích yêu cầu...",
+                    expanded=True,
+                ) as run_status:
+                    st.write(
+                        f"Provider: `{provider_name}`"
+                    )
+                    st.write(
+                        f"Model: `{selected_model}`"
+                    )
+                    st.write(
+                        f"Artifact: "
+                        f"`{artifact_version.artifact_version}`"
+                    )
+
+                    response = run_agent_loop(
+                        provider=provider,
+                        messages=input_messages,
+                        tools=openai_tools,
+                        model=selected_model,
+                        max_tool_rounds=max_tool_rounds,
+                    )
+
+                    response_status = response.get(
+                        "status",
+                        "unknown",
+                    )
+
+                    if response_status in {
+                        "provider_error",
+                        "max_tool_rounds",
+                    }:
+                        run_status.update(
+                            label="Agent kết thúc với lỗi",
+                            state="error",
+                            expanded=False,
+                        )
+                    elif response_status == "waiting_for_user":
+                        run_status.update(
+                            label="Agent cần thêm thông tin",
+                            state="complete",
+                            expanded=False,
+                        )
+                    else:
+                        run_status.update(
+                            label="Agent đã hoàn thành",
+                            state="complete",
+                            expanded=False,
+                        )
+
+                assistant_text = response.get(
+                    "assistant_text",
+                    "",
+                )
+
+                st.markdown(assistant_text)
+
+                response_tool_events = response.get(
+                    "tool_events",
+                    [],
+                )
+
+                response_rounds = response.get(
+                    "rounds",
+                    [],
+                )
+
+                run_record = {
+                    "run_id": run_id,
+                    "created_at": datetime.now().isoformat(
+                        timespec="seconds"
+                    ),
+                    "provider": provider_name,
+                    "model": selected_model,
+                    "version": version_label,
+                    "artifact_version": (
+                        artifact_version.artifact_version
+                    ),
+                    "prompt_hash": (
+                        artifact_version.prompt_hash
+                    ),
+                    "tools_hash": (
+                        artifact_version.tools_hash
+                    ),
+                    "status": response_status,
+                    "user_input": user_input,
+                    "assistant_text": assistant_text,
+                    "tool_events": response_tool_events,
+                    "rounds": response_rounds,
+                    "total_duration_ms": response.get(
+                        "total_duration_ms",
+                        0,
+                    ),
+                    "error": response.get("error"),
+                }
+
+                render_run_metrics(run_record)
+
+                if response_tool_events:
+                    with st.expander(
+                        (
+                            "Tool Trace "
+                            f"· {len(response_tool_events)} event(s)"
+                        ),
+                        expanded=show_trace_live,
+                    ):
+                        for event in response_tool_events:
+                            render_tool_event(
+                                event,
+                                expanded=False,
+                            )
+
+                if response.get("error"):
+                    with st.expander(
+                        "Technical error details"
+                    ):
+                        st.code(
+                            json_text(response["error"]),
+                            language="json",
+                        )
+
+            assistant_message = {
+                "role": "assistant",
+                "content": assistant_text,
+                "run_id": run_id,
+                "status": response_status,
+                "tool_events": response_tool_events,
+            }
+
+            st.session_state.messages.append(
+                assistant_message
+            )
+
+            st.session_state.history.extend(
+                [
+                    {
+                        "role": "user",
+                        "content": user_input,
+                    },
+                    {
+                        "role": "assistant",
+                        "content": assistant_text,
+                    },
+                ]
+            )
+
+            st.session_state.runs.append(run_record)
+            save_transcript()
+
+    # ========================================================
+    # Tool Trace tab
+    # ========================================================
+
+    with trace_tab:
+        st.markdown(
+            '<div class="section-label">Execution evidence</div>',
+            unsafe_allow_html=True,
+        )
+
+        if not st.session_state.runs:
+            st.info(
+                "Chưa có run nào. Hãy chạy agent trong tab Chat."
+            )
+        else:
+            run_options = {
+                run["run_id"]: run
+                for run in reversed(st.session_state.runs)
+            }
+
+            selected_run_id = st.selectbox(
+                "Chọn run cần kiểm tra",
+                options=list(run_options.keys()),
+            )
+
+            selected_run = run_options[selected_run_id]
+
+            render_run_metrics(selected_run)
+
+            st.caption(
+                f"Artifact: "
+                f"`{selected_run.get('artifact_version')}`"
+            )
+
+            st.markdown("### User request")
+            st.info(selected_run.get("user_input", ""))
+
+            st.markdown("### Final response")
+            st.markdown(
+                selected_run.get("assistant_text", "")
+            )
+
+            st.markdown("### Tool execution trace")
+
+            selected_events = selected_run.get(
+                "tool_events",
+                [],
+            )
+
+            if not selected_events:
+                st.info(
+                    "Run này không gọi tool."
+                )
+            else:
+                for event in selected_events:
+                    render_tool_event(
+                        event,
+                        expanded=True,
+                    )
+
+            with st.expander("Round-level details"):
+                st.code(
+                    json_text(
+                        selected_run.get("rounds", [])
+                    ),
+                    language="json",
+                )
+
+    # ========================================================
+    # Run Details tab
+    # ========================================================
+
+    with run_tab:
+        st.markdown(
+            '<div class="section-label">Reproducibility information</div>',
+            unsafe_allow_html=True,
+        )
+
+        artifact_col, session_col = st.columns(2)
+
+        with artifact_col:
+            with st.container(border=True):
+                st.markdown("### Artifact identity")
+
+                st.markdown(
+                    f"**Version label:** `{version_label}`"
+                )
+                st.markdown(
+                    "**Artifact version:**"
+                )
+                st.code(
+                    artifact_version.artifact_version,
+                    language=None,
+                )
+
+                st.markdown("**Prompt hash:**")
+                st.code(
+                    artifact_version.prompt_hash,
+                    language=None,
+                )
+
+                st.markdown("**Tools hash:**")
+                st.code(
+                    artifact_version.tools_hash,
+                    language=None,
+                )
+
+        with session_col:
+            with st.container(border=True):
+                st.markdown("### Runtime session")
+
+                st.markdown(
+                    f"**Session ID:** "
+                    f"`{st.session_state.session_id}`"
+                )
+                st.markdown(
+                    f"**Provider:** `{provider_name}`"
+                )
+                st.markdown(
+                    f"**Model:** `{selected_model}`"
+                )
+                st.markdown(
+                    f"**Recorded runs:** "
+                    f"`{len(st.session_state.runs)}`"
+                )
+                st.markdown(
+                    f"**Transcript:** "
+                    f"`transcripts/"
+                    f"{st.session_state.session_id}"
+                    f".transcript.json`"
+                )
+
+        st.markdown("### Registered tools")
+
+        rows = tool_declaration_rows(tool_declarations)
+
+        if rows:
+            st.dataframe(
+                rows,
+                use_container_width=True,
+                hide_index=True,
+            )
+        else:
+            st.warning(
+                "Không đọc được danh sách tool declarations."
+            )
+
+        with st.expander(
+            "System prompt preview",
+            expanded=False,
+        ):
+            st.code(
+                system_prompt,
+                language="markdown",
+            )
+
+        with st.expander(
+            "Raw transcript JSON",
+            expanded=False,
+        ):
+            st.code(
+                json_text(transcript_payload()),
+                language="json",
+            )
 
 
 if __name__ == "__main__":
