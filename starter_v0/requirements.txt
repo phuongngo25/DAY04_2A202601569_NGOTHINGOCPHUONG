@@ -1,4 +1,4 @@
-# Live model provider SDKs (install the one you use):
+# Live model provider SDKs (NVIDIA NIM uses the OpenAI-compatible SDK):
 openai>=1.0.0
 anthropic>=0.34.0
 google-genai>=0.8.0

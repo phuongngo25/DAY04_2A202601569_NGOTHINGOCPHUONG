@@ -18,7 +18,7 @@ load_lab_env(ROOT)
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Smoke-test live structured tool calling.")
-    parser.add_argument("--provider", choices=["openrouter", "openai", "anthropic", "gemini"], required=True)
+    parser.add_argument("--provider", choices=["openrouter", "openai", "anthropic", "gemini", "nvidia"], required=True)
     parser.add_argument("--model", default=None, help="Optional model override. Omit to use provider default from code.")
     parser.add_argument("--tools", type=Path, default=ARTIFACTS_DIR / "tools.yaml")
     args = parser.parse_args()
