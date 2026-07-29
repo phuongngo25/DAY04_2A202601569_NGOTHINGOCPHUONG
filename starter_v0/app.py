@@ -559,34 +559,7 @@ def render_header(
     st.markdown(
         f"""
         <section class="hero-section">
-            <div class="hero-eyebrow">Day 04 · Research Agent Evaluation</div>
-
-            <h1 class="hero-title">
-                🔬 AI Research Agent Laboratory
-            </h1>
-
-            <p class="hero-subtitle">
-                Giao diện quan sát quá trình agent phân tích yêu cầu,
-                lựa chọn tool, truyền arguments, thực thi và tạo câu trả lời cuối.
-            </p>
-
-            <div class="chip-row">
-                <span class="info-chip">
-                    🧠 Provider: <strong>{provider_safe}</strong>
-                </span>
-
-                <span class="info-chip">
-                    ⚡ Model: <strong>{model_safe}</strong>
-                </span>
-
-                <span class="info-chip">
-                    🧬 Version: <strong>{version_safe}</strong>
-                </span>
-
-                <span class="info-chip">
-                    🧰 Tools: <strong>{tool_count}</strong>
-                </span>
-            </div>
+           
         </section>
         """,
         unsafe_allow_html=True,
