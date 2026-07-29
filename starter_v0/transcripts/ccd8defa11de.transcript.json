@@ -1,0 +1,51 @@
+{
+  "session_id": "ccd8defa11de",
+  "updated_at": "2026-07-29T12:14:52",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Tìm trên web tin AI hôm nay và tóm tắt những điểm nổi bật."
+    },
+    {
+      "role": "assistant",
+      "content": "Không thể hoàn thành yêu cầu vì provider đang gặp lỗi. Hãy kiểm tra API key, quota hoặc cấu hình model.",
+      "run_id": "v0_20260729T121448_8d262d",
+      "status": "provider_error",
+      "tool_events": []
+    }
+  ],
+  "runs": [
+    {
+      "run_id": "v0_20260729T121448_8d262d",
+      "created_at": "2026-07-29T12:14:52",
+      "provider": "nvidia",
+      "model": "meta/llama-3.3-70b-instruct",
+      "version": "v0",
+      "artifact_version": "v0+pda77501bcfdf+teda24430e0a6",
+      "prompt_hash": "da77501bcfdfe51b37735ca9b1f6ee360de380627ee239df6e5db543963b86a2",
+      "tools_hash": "eda24430e0a60f1bfc80399ffb3813ccfde89b0ce74af181d3f0dc64663077be",
+      "status": "provider_error",
+      "user_input": "Tìm trên web tin AI hôm nay và tóm tắt những điểm nổi bật.",
+      "assistant_text": "Không thể hoàn thành yêu cầu vì provider đang gặp lỗi. Hãy kiểm tra API key, quota hoặc cấu hình model.",
+      "tool_events": [],
+      "rounds": [
+        {
+          "round": 1,
+          "assistant_text": null,
+          "tool_calls": [],
+          "tool_results": [],
+          "provider_duration_ms": 4079.01,
+          "provider_error": {
+            "type": "RuntimeError",
+            "message": "Missing API key env var: NVIDIA_API_KEY"
+          }
+        }
+      ],
+      "total_duration_ms": 4079.02,
+      "error": {
+        "type": "RuntimeError",
+        "message": "Missing API key env var: NVIDIA_API_KEY"
+      }
+    }
+  ]
+}
