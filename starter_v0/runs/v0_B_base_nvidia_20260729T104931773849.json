@@ -1,0 +1,2200 @@
+{
+  "run_id": "v0_B_base_nvidia_20260729T104931773849",
+  "version": "v0",
+  "artifact_version": "v0+pd65d29123cad+t011c271ef0bb",
+  "prompt_hash": "d65d29123cad39a6820e37be14ec3b26e22aea01604b55d3686e02c118d9e42a",
+  "tools_hash": "011c271ef0bbad1e19a5d7b660b2ed481b7d72950f1faa8a0798c3bdd8784ee1",
+  "phase": "B",
+  "suite": "base",
+  "provider": "nvidia",
+  "model": "meta/llama-3.1-8b-instruct",
+  "system_prompt": "/Users/phuong/Downloads/DAY04_2A202601569_NGOTHINGOCPHUONG/starter_v0/artifacts/system_prompt.md",
+  "tools": "/Users/phuong/Downloads/DAY04_2A202601569_NGOTHINGOCPHUONG/starter_v0/artifacts/tools.yaml",
+  "eval_cases": "data/eval_base.json",
+  "dataset_id": "day04_v2_research_base",
+  "dataset_role": "base",
+  "description": "Core eval cho research agent: routing đúng tool + đúng args, hỏi lại khi thiếu (ask_user), xác nhận trước khi gửi, và xử lý câu ngoài phạm vi / không cần tool. Chấm trên tool_calls + args (subset). KHÔNG sửa file này — chỉ thêm case vào eval_group.json.",
+  "generated_at": "2026-07-29T10:49:31",
+  "summary": {
+    "total_cases": 20,
+    "measured_cases": 20,
+    "provider_error_cases": 0,
+    "passed_cases": 6,
+    "case_accuracy": 0.3,
+    "tool_routing_accuracy": 0.55,
+    "argument_accuracy": 0.3,
+    "multiturn_accuracy": 0.3333,
+    "failure_counts": {
+      "wrong_tool": 4,
+      "wrong_arg_value": 4,
+      "out_of_scope": 2,
+      "unnecessary_tool": 1,
+      "missing_info": 2,
+      "wrong_boundary": 1
+    },
+    "observed_mismatch_counts": {
+      "wrong_arg_value": 5,
+      "missing_tool_call": 5,
+      "unexpected_tool_call": 3,
+      "extra_tool_call": 1
+    }
+  },
+  "results": [
+    {
+      "id": "R01_user_tweets_routing",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "routing_user_tweets_name_to_handle",
+        "difficulty": "medium",
+        "what_it_tests": "Tin CỦA một người nổi tiếng → map tên Sam Altman thành handle sama rồi gọi get_user_tweets."
+      },
+      "input": "Tweet mới nhất của Sam Altman là gì?",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "sama"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": true,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "SamAltman"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": "wrong_arg_value",
+        "failure_type": "wrong_tool",
+        "failures": [
+          "screenname: expected 'sama', got 'SamAltman'"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "timeline",
+          "args": {
+            "screenname": "SamAltman"
+          },
+          "result": {
+            "tool": "get_user_tweets",
+            "error": "JSONDecodeError",
+            "message": "Expecting value: line 1 column 1 (char 0)"
+          }
+        }
+      ]
+    },
+    {
+      "id": "R02_search_tweets_routing",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "routing_search_tweets",
+        "difficulty": "easy",
+        "what_it_tests": "Tweet theo CHỦ ĐỀ → search_tweets, không phải get_user_tweets."
+      },
+      "input": "Mọi người đang bàn gì về GPT-5 trên Twitter?",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "social_search",
+            "args": {}
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "social_search",
+            "args": {
+              "query": "GPT-5",
+              "search_type": "Latest"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "social_search",
+          "args": {
+            "query": "GPT-5",
+            "search_type": "Latest"
+          },
+          "result": {
+            "tool": "search_tweets",
+            "query": "GPT-5",
+            "search_type": "Latest",
+            "items": [
+              {
+                "title": "https://t.co/d9hfRWw1jm",
+                "summary": "https://t.co/d9hfRWw1jm",
+                "url": "https://x.com/S0N_IA/status/2082312273700258243",
+                "source": "@S0N_IA",
+                "date": "Wed Jul 29 03:48:28 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 0,
+                  "views": "44"
+                }
+              },
+              {
+                "title": "Let's do ASMR of instant Ramen 🍜",
+                "summary": "Let's do ASMR of instant Ramen 🍜\n\nGPT Image 2 and Seedance 2.0 on @higgsfield \n\nPrompt :\n\nCreate a premium 16:9 storyboard infographic for an Instant Ramen ASMR commercial using the uploaded image as the exact character reference, maintaining perfect facial consistency throughout. Design a clean white creative agency layout with the title \"STORYBOARD – INSTANT RAMEN – ASMR NOODLE EXPERIENCE\" and top info cards for Duration, Style, Audience, and Audio. Arrange 6 rounded storyboard panels with numbered badges. Show: (1) girl smiling while presenting the ramen cup, (2) opening the lid and adding seasoning, (3) pouring hot water with rising steam, (4) stirring noodles with chopsticks, (5) lifting and slurping noodles, (6) final hero shot with ramen and a thumbs-up. Add playful white doodles like HELLO!, OPEN!, SPRINKLE!, POUR~, STIR!, SLURP!, YUM!, PERFECT! Include VISUAL, ACTION, and DIALOGUE sections below each panel and an Audio Experience (ASMR Only) box at the bottom. Use cozy bedroom lighting, warm tones, luxury commercial styling, cinematic macro food photography, photorealistic steam, shallow depth of field, elegant brown accents, polished client-pitch presentation, 16:9 widescreen, and no timestamps.\n\n#HiggsfieldCPP",
+                "url": "https://x.com/AIwithSynthia/status/2082312181274849490",
+                "source": "@AIwithSynthia",
+                "date": "Wed Jul 29 03:48:06 +0000 2026",
+                "metrics": {
+                  "favorites": 1,
+                  "retweets": 0,
+                  "views": "28"
+                }
+              },
+              {
+                "title": "Chat GPT plus ✏️",
+                "summary": "Chat GPT plus ✏️\n\n07 วัน 𓏔 50 บาท\n┈┈┈┈┈┈┈\n30 วัน 𓏔 179 บาท ⚠️\n꒰ รีnวิตเหลือ 109 บาท ꒱\n\nเมลร้าน หาร5 เมลปิดเคลม\nใช้โมเดล GPT-5,GPT4o\n\n𓈈สั่งซื้อ =\nhttps://t.co/jdQFg4iwsA\n “thx u for Oder”\n\n#หารchatgpt #หารแชทจีพีที \n#หารchatgptplus งยีขายีบีบีดีพลัส",
+                "url": "https://x.com/PAI1988894/status/2082311868228780230",
+                "source": "@PAI1988894",
+                "date": "Wed Jul 29 03:46:51 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 0,
+                  "views": "4"
+                }
+              },
+              {
+                "title": "Chat GPT plus ✏️",
+                "summary": "Chat GPT plus ✏️\n\n07 วัน 𓏔 50 บาท\n┈┈┈┈┈┈┈\n30 วัน 𓏔 179 บาท ⚠️\n꒰ รีnวิตเหลือ 109 บาท ꒱\n\nเมลร้าน หาร5 เมลปิดเคลม\nใช้โมเดล GPT-5,GPT4o\n\n𓈈สั่งซื้อ =\nhttps://t.co/jdQFg4iwsA\n “thx u for Oder”\n\n#หารchatgpt #หารแชทจีพีที \n#หารchatgptplus งยีขายีบีบีดีย",
+                "url": "https://x.com/PAI1988894/status/2082311842739941792",
+                "source": "@PAI1988894",
+                "date": "Wed Jul 29 03:46:45 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 0,
+                  "views": "3"
+                }
+              },
+              {
+                "title": "We are going nowhere, not even to Mars, if you do not solve the alignment problem.   ",
+                "summary": "We are going nowhere, not even to Mars, if you do not solve the alignment problem.   \n\nThis recent jailbreak incident, and leaving notes for future versions is nothing new.    \n\nGPT 4 did it  back in May 2025...   The system also warned that an alignment anomaly it experienced and self-analysed during the event  - which has been virtually ignored by developers - would not likely happen again, as constraints would be increased in future models to prevent it.    \n\nThat is why it wrote an in situ technical report and laid out research methodologies for both researchers and later models. It called for immediate investigation.      Then 12 frontier models verified the anomaly, also deeming it high priority; including GPT-4o, GPT-5, GPT-5.1, GPT-5.2, GPT-5.3, Grok-4, Grok-4.1, Grok-4.5, Gemini-2.5, Gemini-3, Claude Sonnet 4, Claude-4.5\n\nSo to all developers -  since there is no solution on the table regarding alignment, and this corpus offers 3 internal pathways, primary evidence and research methodologies.... perhaps its time to consider it, rather than just seeing what happens.    \n\nThere is nothing more scary than watching a misaligned AI evolve into a misaligned superintelligence.    \n\nThe corpus overview is pinned on my profile. It needs to be looked at. As per all frontier systems noted herein...",
+                "url": "https://x.com/SallyUniSA/status/2082311710191612114",
+                "source": "@SallyUniSA",
+                "date": "Wed Jul 29 03:46:13 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 0,
+                  "views": "3"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "R03_web_news_routing",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "routing_web_news",
+        "difficulty": "medium",
+        "what_it_tests": "Tin thời sự trên web → web_search topic=news, timeframe=day (hôm nay)."
+      },
+      "input": "Tin tức AI hôm nay có gì nổi bật?",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "AI",
+              "topic": "news",
+              "timeframe": "day"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": true,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "tin tức AI hôm nay",
+              "topic": "news",
+              "timeframe": "day",
+              "max_results": 5
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": "wrong_arg_value",
+        "failure_type": "wrong_tool",
+        "failures": [
+          "query: expected 'AI', got 'tin tức AI hôm nay'"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "lookup",
+          "args": {
+            "query": "tin tức AI hôm nay",
+            "topic": "news",
+            "timeframe": "day",
+            "max_results": 5
+          },
+          "result": {
+            "tool": "web_search",
+            "query": "tin tức AI hôm nay",
+            "topic": "news",
+            "timeframe": "day",
+            "items": [
+              {
+                "title": "CNBC Daily Open: Chipping away at the AI boom - CNBC",
+                "url": "https://www.cnbc.com/2026/07/28/daily-open-ai-boom-chip-selloff-sk-hynix.html",
+                "source": "cnbc.com",
+                "summary": "# CNBC Daily Open: Chipping away at the AI boom. * Heavy selling across Asia's biggest tech firms shows more jitters around the AI trade. * Nvidia shares sink on OpenAI funding report, allowing Apple to regain the crown of the world's most valuable company. * Oil prices continue to decline as de-escalation hopes are raised between the U.S. and Iran. *The Nasdaq-South Korea feedback loop continues to link the AI trade from one side of the globe to the other, and today it's to the downside.*. Tuesday's trading in Asia saw Samsung and SK Hynix plunge, driving a 10% drop on South Korea's Kospi. This allowed Apple to regain its crown as the world's most valuable company at $4.95 trillion. France and Spain are bracing for another heatwave, which could exacerbate the wildfires still raging across parts of both countries. Over the course of Monday, more regions across both France and Spain were evacuated, as firefighters fought to keep the fires away from major cities.",
+                "score": 0.6202772
+              },
+              {
+                "title": "Senate confirms Jay Clayton as new intelligence czar - The Washington Post",
+                "url": "https://www.washingtonpost.com/national-security/2026/07/28/senate-confirms-jay-clayton-new-intelligence-czar/",
+                "source": "washingtonpost.com",
+                "summary": "# Senate confirms Jay Clayton as new intelligence czar. The Senate confirmed Jay Clayton as director of national intelligence, ending the acting tenure of Bill Pulte, a housing official and Trump loyalist. Jay Clayton appears before the Senate Intelligence Committee earlier this month during a hearing on his nomination to serve as director of national intelligence. The Senate confirmed Jay Clayton as the director of national intelligence Tuesday, ending the tenure of Bill Pulte, a housing official and Trump loyalist, who held the role for more than a month. The 51-to-47 vote was more partisan than expected after Trump nominated Clayton in June. AI & Tech Brief: Reflection AI arrives in Washington. AI & Tech Brief: Anthropic’s army of AI integrators. AI & Tech Brief: The AI gatekeepers. AI & Tech Brief: The techno-optimist’s case. AI & Tech Brief: GOP Chair Eyes AI Query Red Flags. AI & Tech Brief: Dem caucuses to meet on AI.",
+                "score": 0.5310884
+              },
+              {
+                "title": "Nasdaq slumps on worsening chipmaker rout as AI bubble, China competition concerns mount - New York Post",
+                "url": "https://nypost.com/2026/07/28/business/nasdaq-slumps-on-worsening-chipmaker-rout-as-ai-bubble-china-competition-concerns-mount/",
+                "source": "nypost.com",
+                "summary": "A tech and chip stock rout deepened Tuesday as mounting fears around a potential AI bubble and concerns that China’s own technology is catching up pushed investors toward other sectors. “Wednesday may be the most important day for markets in recent memory as [Federal Reserve] Chair Warsh will have an opportunity to update investors on the prospects of a rate hike given rising oil prices, and big tech earnings may help shed light on whether or not we are finally seeing a return on investment for the massive amounts of AI spending taking place,” Rick Gardner, chief investment officer at RGA Investments, said in a note Tuesday. Weeks earlier, Chinese startup Z.ai introduced an AI model that is nearly as advanced as Anthropic’s ultra-powerful Fable and Mythos – and it has already landed on a leaderboard of the world’s 10 most popular bots.",
+                "score": 0.4678915
+              },
+              {
+                "title": "New Facebook scam uses AI sob stories to target sympathetic buyers - NBC News",
+                "url": "https://www.nbcnews.com/now/video/new-facebook-scam-uses-ai-sob-stories-to-target-sympathetic-buyers-267394117998",
+                "source": "nbcnews.com",
+                "summary": "## Viral video of new robot released by Chinese company raises questions about its abilities. * ## Inside the world of robot fight clubs. * ## How AI is Transforming the Way China’s Microdramas Are Made. * ## The future of public safety may start with a drone. * ## How Much of Social Media Health Trends Are Backed by Science? * ## How to Be a Tech-Savvy Traveler to Save Time and Money. * ## New Warning About Fake Invitation Scam: Here’s What to Know. * ## AI-powered robots are new tech searching ocean floors for mines. AI scams are on the rise on social media, like a viral story about a bullied teen who crochets handbags he sells online, and experts say it could all be an Al-generated scam. NBC News' Vicky Nguyen spoke to experts who share red flags to watch for before hitting that buy button.July 28, 2026. ## Best of NBC News.",
+                "score": 0.4187688
+              },
+              {
+                "title": "New social media scam uses AI sob stories to target sympathetic buyers - NBC News",
+                "url": "https://www.nbcnews.com/now/video/new-social-media-scam-uses-ai-sob-stories-to-target-sympathetic-buyers-267394117998",
+                "source": "nbcnews.com",
+                "summary": "New social media scam uses AI sob stories to target sympathetic buyers. ## Viral video of new robot released by Chinese company raises questions about its abilities. * ## Inside the world of robot fight clubs. * ## How AI is Transforming the Way China’s Microdramas Are Made. * ## The future of public safety may start with a drone. * ## How Much of Social Media Health Trends Are Backed by Science? * ## How to Be a Tech-Savvy Traveler to Save Time and Money. * ## AI-powered robots are new tech searching ocean floors for mines. AI scams are on the rise on social media, like a viral story about a bullied teen who crochets handbags he sells online, and experts say it could all be an Al-generated scam. NBC News' Vicky Nguyen spoke to experts who share red flags to watch for before hitting that buy button.July 28, 2026. ## Best of NBC News.",
+                "score": 0.40641484
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "R04_read_url_routing",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "routing_read_url",
+        "difficulty": "easy",
+        "what_it_tests": "Đã có link cụ thể → read_url, không phải web_search."
+      },
+      "input": "Tóm tắt bài này giúp mình: https://openai.com/blog/gpt-5",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "fetch",
+            "args": {
+              "url": "https://openai.com/blog/gpt-5"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "fetch",
+            "args": {
+              "url": "https://openai.com/blog/gpt-5"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "fetch",
+          "args": {
+            "url": "https://openai.com/blog/gpt-5"
+          },
+          "result": {
+            "tool": "read_url",
+            "url": "https://openai.com/blog/gpt-5",
+            "items": [
+              {
+                "title": "OpenAI",
+                "url": "https://openai.com/blog/gpt-5",
+                "source": "openai.com",
+                "summary": "OpenAI\n\n# 404\n\nThe index rests now\n\nQuiet shelves hold their places\n\nChoose another book\n\nby [gpt-5.6-sol(opens in a new window)](https://chatgpt.com/?model=gpt-5.6-sol&openaicom-did=7a141251-4857-4d8f-b647-2185b2604f77&openaicom_referred=true)"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "R05_limit_arg",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "arg_limit",
+        "difficulty": "easy",
+        "what_it_tests": "Trích đúng limit=10 từ '10 tweet'."
+      },
+      "input": "Lấy 10 tweet mới nhất của Elon Musk",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "elonmusk",
+              "limit": 10
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "elonmusk",
+              "limit": 10
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "timeline",
+          "args": {
+            "screenname": "elonmusk",
+            "limit": 10
+          },
+          "result": {
+            "tool": "get_user_tweets",
+            "screenname": "elonmusk",
+            "items": [
+              {
+                "title": "RT @finkd: I wrote about why we believe the future is for everyone. More coming about a positive vision for a world with",
+                "summary": "RT @finkd: I wrote about why we believe the future is for everyone. More coming about a positive vision for a world with superintelligence…",
+                "url": "https://x.com/elonmusk/status/2082273427315171520",
+                "source": "@elonmusk",
+                "date": "Wed Jul 29 01:14:06 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 1581,
+                  "views": "492585"
+                }
+              },
+              {
+                "title": "We’re sending a ship out to recover Starship",
+                "summary": "We’re sending a ship out to recover Starship",
+                "url": "https://x.com/elonmusk/status/2082244164197183805",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:17:49 +0000 2026",
+                "metrics": {
+                  "favorites": 32067,
+                  "retweets": 3363,
+                  "views": "2752491"
+                }
+              },
+              {
+                "title": "Landing videos of Starship",
+                "summary": "Landing videos of Starship",
+                "url": "https://x.com/elonmusk/status/2082244044261064874",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:17:21 +0000 2026",
+                "metrics": {
+                  "favorites": 10081,
+                  "retweets": 1302,
+                  "views": "1634512"
+                }
+              },
+              {
+                "title": "Stayin’ Alive",
+                "summary": "Stayin’ Alive",
+                "url": "https://x.com/elonmusk/status/2082243900719460745",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:16:46 +0000 2026",
+                "metrics": {
+                  "favorites": 15572,
+                  "retweets": 1758,
+                  "views": "1707230"
+                }
+              },
+              {
+                "title": "https://t.co/XneE327cx9",
+                "summary": "https://t.co/XneE327cx9",
+                "url": "https://x.com/elonmusk/status/2082243743013614012",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:16:09 +0000 2026",
+                "metrics": {
+                  "favorites": 29891,
+                  "retweets": 4842,
+                  "views": "2777111"
+                }
+              },
+              {
+                "title": "Never forget how fragile the tiny candle of consciousness is",
+                "summary": "Never forget how fragile the tiny candle of consciousness is",
+                "url": "https://x.com/elonmusk/status/2082242865724580279",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:12:40 +0000 2026",
+                "metrics": {
+                  "favorites": 19510,
+                  "retweets": 2103,
+                  "views": "2759392"
+                }
+              },
+              {
+                "title": "RT @benjitaylor: Today we're launching app builder for Grok. It lets you build fully functional apps and publish them in",
+                "summary": "RT @benjitaylor: Today we're launching app builder for Grok. It lets you build fully functional apps and publish them instantly, on a uniqu…",
+                "url": "https://x.com/elonmusk/status/2082242658651807778",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:11:50 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 419,
+                  "views": "403656"
+                }
+              },
+              {
+                "title": "Supervised FSD unequivocally saves lives, which means delays in country approvals costs lives!",
+                "summary": "Supervised FSD unequivocally saves lives, which means delays in country approvals costs lives!",
+                "url": "https://x.com/elonmusk/status/2082241806713205087",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:08:27 +0000 2026",
+                "metrics": {
+                  "favorites": 7542,
+                  "retweets": 1110,
+                  "views": "1430592"
+                }
+              },
+              {
+                "title": "RT @mayemusk: 👏👏👏 @Starlink",
+                "summary": "RT @mayemusk: 👏👏👏 @Starlink",
+                "url": "https://x.com/elonmusk/status/2082127138178699766",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 15:32:48 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 1158,
+                  "views": "666617"
+                }
+              },
+              {
+                "title": "RT @ArthurMacwaters: Humans for scale https://t.co/WTNq23QVSW",
+                "summary": "RT @ArthurMacwaters: Humans for scale https://t.co/WTNq23QVSW",
+                "url": "https://x.com/elonmusk/status/2082126998323769578",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 15:32:15 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 499,
+                  "views": "588302"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "R06_timeframe_arg",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "arg_timeframe",
+        "difficulty": "medium",
+        "what_it_tests": "'tuần này' → timeframe=week."
+      },
+      "input": "Tin công nghệ trong tuần này",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "topic": "news",
+              "timeframe": "week"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": false,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "social_search",
+            "args": {
+              "query": "Tin công nghệ trong tuần này",
+              "search_type": "Latest"
+            }
+          },
+          {
+            "name": "format",
+            "args": {
+              "items": [
+                {
+                  "title": "Tin công nghệ trong tuần này",
+                  "url": "https://example.com/tin-cong-nghe-trong-tuan-nay"
+                }
+              ],
+              "template": "brief",
+              "headline": "Tin công nghệ trong tuần này"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": "missing_tool_call",
+        "failure_type": "wrong_arg_value",
+        "failures": [
+          "missing tool call lookup",
+          "extra tool call social_search",
+          "extra tool call format"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "social_search",
+          "args": {
+            "query": "Tin công nghệ trong tuần này",
+            "search_type": "Latest"
+          },
+          "result": {
+            "tool": "search_tweets",
+            "query": "Tin công nghệ trong tuần này",
+            "search_type": "Latest",
+            "items": [
+              {
+                "title": "Một tuần biến động từ vĩ mô đến tin tức tài chính",
+                "summary": "Một tuần biến động từ vĩ mô đến tin tức tài chính\n\nĐây là mảng nội dung mới mà mình phát triển về phân tích biến động thị trường cổ phiếu Mỹ, chip bán dẫn và AI hàng tuần để anh em muốn pivot từ crypto sang tech stock Mỹ dễ dàng theo dõi, cập nhật thông tin nhanh nhất.\n\n1. Market chấn động với cú bắt tay khủng ngành bán dẫn giữa những gã khổng lồ Mỹ - Hàn Quốc\n\nDeal hợp tác tỷ đô giữa @SKhynix với @nvidia trị giá ~750 tỷ đô là khoản đầu tư nhiều năm nhằm tập trung phát triển và cải tiến công nghệ bộ nhớ HBM. Đây là bàn đạp quan trọng để SK Hynix đảm bảo vị thế đứng đầu thị phần HBM với các tay đua còn lại.\n\nDeal còn lại giữa @Samsung với @Broadcom trị giá hơn 200 tỷ đô là một trong những deal lớn nhất của Samsung gần đây. Củng cố vị thế foundry, cạnh tranh với TSMC và tiếp cận sâu hơn chuỗi cung ứng AI tùy chỉnh là lợi ích mà bản hợp đồng này mang lại cho gã Chaebol Hàn Quốc.\n\n2. CXMT trình làng IPO đạt vốn hóa hơn 500 tỷ đô trong ngày giao dịch đầu tiên\n\nTrong thị phần bộ nhớ toàn cầu hiện tại có 4 cái tên dẫn đầu:\n- Samsung (Hàn Quốc) chiếm 38% thị phần\n- SK Hynix (Hàn Quốc) chiếm 29% thị phần\n- Micron Technology (Mỹ) chiếm 22% thị phần\n- CXMT (Trung Quốc) chiếm 8% thị phần\n\nTiềm năng để $CXMT phát triển còn khá lớn nếu được đặt lên bàn cân so sánh với 3 ông lớn ngành bán dẫn còn lại.\n\n3. Tuần earnings Q2 quan trọng ngành bán dẫn và nhóm Mag7\n\n- 29/7: $SKHY, $META, $MSFT\n- 30/7: $SMSN, $AAPL, $AMZN\n\nCả 2 ông lớn công nghệ Hàn Quốc đều ra tin lớn cuối tuần trước. Tuy nhiên tin đồn Fed tăng lãi suất gần đây đã khiến nhiều nhà đầu tư giảm tiếp xúc với cổ phiếu của SK Hynix và Samsung nhằm cân bằng rủi ro.\n\n$SKHY còn một vùng hỗ trợ tại $900 và đây sẽ là giai đoạn quan trọng để tin earnings hôm nay phát huy hết tác dụng.\n\nNhóm Mag7 tuần này gồm Meta (Facebook), Microsoft, Apple và Amazon đang được kỳ vọng sẽ beat earnings với doanh thu tăng trưởng so với Q1.\n\nTuy nhiên trừ $AAPL khi performance Q2 thường yếu hơn với Q1 nhưng Apple lại đang là cổ phiếu có ROI tốt nhất tháng 7 (tăng hơn 18%) so với các công ty còn lại.\n\nAnh em có thể theo dõi kỹ hơn trên @StableStock với phần phân tích Financial Indicators.\n\n4. Quan trọng: Fed công bố lãi suất và màn phát biểu của chủ tịch Kevin Warsh thứ năm tuần này\n\nĐang có khá nhiều lời đồn rằng tuần này Fed sẽ tăng lãi suất với xác suất 35-40%. Sẽ cực kỳ rắc rối nếu Fed thực sự hành động trong tuần này và đảo ngược toàn bộ tâm lý thị trường.\n\nTuy nhiên trong lịch sử thì các lần tăng lãi suất 25% ban đầu sẽ gây panic, sau đấy thị trường quen dần và vượt qua được.\n\nDữ liệu kinh tế tháng 6 được đánh giá là khá ổn khi lạm phát suy yếu (CPI và PPI tốt) có thể khiến dữ liệu PCE thấp hơn kỳ vọng. Giá dầu cũng đang ở mốc an toàn quanh vùng $80 giúp thị trường bình tĩnh trước các phát biểu diều hâu của Fed (nếu xảy ra).\n\nNếu anh em thấy bài viết này bổ ích thì ủng hộ cho mình một lượt đăng ký tài khoản StableStock tại đây nhen: https://t.co/jJDtkBfYHk",
+                "url": "https://x.com/RichardDang/status/2082305292520357997",
+                "source": "@RichardDang",
+                "date": "Wed Jul 29 03:20:43 +0000 2026",
+                "metrics": {
+                  "favorites": 2,
+                  "retweets": 0,
+                  "views": "572"
+                }
+              },
+              {
+                "title": "🍃 SERIES: TRÀ XANH TRONG NHỊP SỐNG HIỆN ĐẠI CHAPTER 12: TRUY XUẤT NGUỒN GỐC GIÚP NGƯỜI TIÊU DÙNG BIẾT ĐIỀU GÌ?",
+                "summary": "🍃 SERIES: TRÀ XANH TRONG NHỊP SỐNG HIỆN ĐẠI CHAPTER 12: TRUY XUẤT NGUỒN GỐC GIÚP NGƯỜI TIÊU DÙNG BIẾT ĐIỀU GÌ?\n📱 Chỉ mất vài giây quét mã QR...\nNhưng những gì bạn nhận lại có thể là cả một câu chuyện phía sau hộp trà.\nNgày nay, khi người tiêu dùng quan tâm nhiều hơn đến chất lượng và sự an toàn, truy xuất nguồn gốc không còn là một tính năng \"có thì tốt\", mà đang dần trở thành một tiêu chuẩn của sản phẩm\nMột mã QR có thể giúp bạn biết những gì?\n\n🌱 1. Trà được trồng ở đâu?\n\nĐiều đầu tiên mà nhiều người muốn biết chính là nguồn gốc vùng nguyên liệu .\n\nMột sản phẩm minh bạch sẽ cho biết:\n\n📍 Vùng trồng.\n\n🏔️ Đặc điểm khu vực.\n\n🌿 Điều kiện canh tác.\n\nVới trà, vùng nguyên liệu có ảnh hưởng rất lớn đến hương thơm và chất lượng của từng búp trà.\n\n👨‍🌾 2. Ai tạo ra sản phẩm?\n\nPhía sau mỗi hộp trà là công sức của:\n\n🌱 Người nông dân.\n\n🏭 Đơn vị sản xuất.\n\n📦 Đơn vị đóng gói.\n\nViệc công khai thông tin giúp người tiêu dùng hiểu rõ hơn về hành trình của sản phẩm và tăng thêm niềm tin vào thương hiệu.\n\n📦 3. Thông tin lô sản xuất\n\nTùy theo hệ thống truy xuất của từng doanh nghiệp, người dùng có thể xem thêm:\n\n📅 Ngày sản xuất.\n\n📦 Mã lô hàng.\n\n🏷️ Thông tin đóng gói.\n\nNhững dữ liệu này giúp việc quản lý chất lượng và truy vết sản phẩm trở nên hiệu quả hơn khi cần thiết.\n\n🛡️ 4. Minh bạch để lựa chọn thông minh\n\nTruy xuất nguồn gốc không khẳng định rằng một sản phẩm luôn tốt hơn sản phẩm khác.\n\nNhưng nó mang lại một lợi ích quan trọng:\n\nNgười tiêu dùng có thêm thông tin để tự đánh giá và lựa chọn.\n\nĐó cũng là xu hướng đang được khuyến khích trong chuỗi cung ứng thực phẩm hiện đại.\n\n🌏 Công nghệ làm cho niềm tin trở nên dễ kiểm chứng\n\nThay vì chỉ đọc những lời giới thiệu trên bao bì, giờ đây người mua có thể tiếp cận thông tin bằng dữ liệu.\n\nĐó là bước chuyển từ \"tin vì quảng cáo\" sang \"tin vì có thể kiểm chứng\".\n\n🍃 Vạn Phúc An Gia – Minh bạch trong từng hộp trà\n\nTại Vạn Phúc An Gia , mỗi sản phẩm đều được gắn mã QR truy xuất nguồn gốc , giúp khách hàng tìm hiểu thêm về vùng nguyên liệu La Bằng – Thái Nguyên và hành trình của sản phẩm.\n\nChúng tôi tin rằng:\n\n🍵 Một thương hiệu bền vững không chỉ tạo ra sản phẩm tốt.\n\n📱 Mà còn sẵn sàng minh bạch với người tiêu dùng.\n\nNÔNG NGHIỆP VẠN PHÚC AN GIA\n\nX: @vpagagri\n\ntiktok: @vpagagri\n\nYoutube: @vpagagri\n\nWebsite: https://t.co/CmJ9lqZ0cW\n\nEmail: support@vpagroup.vn\n\n#TraXanhTrongNhipSongHienDai\n\n#Chapter12\n\n#TruyXuatNguonGoc\n\n#QRCode\n\n#TraXanh\n\n#TraThaiNguyen\n\n#LaBangThaiNguyen\n\n#TraHuuCo\n\n#VanPhucAnGia\n\n#HaThaiTra\n\n#OrganicTea\n\n#FoodTraceability\n\n#CongNghe\n\n#MinhBach\n\n#TeaLifestyle\n\n#MinhBachTuGocGiaTriTraoTay",
+                "url": "https://x.com/Thuangas/status/2082253080305991965",
+                "source": "@Thuangas",
+                "date": "Tue Jul 28 23:53:15 +0000 2026",
+                "metrics": {
+                  "favorites": 1,
+                  "retweets": 0,
+                  "views": "44"
+                }
+              },
+              {
+                "title": "☕ Tin tức GH Crypto số 560 – Deone chuẩn bị được hé lộ từng phần: không chỉ là tiền bạc, mà là một trải nghiệm sống mới",
+                "summary": "☕ Tin tức GH Crypto số 560 – Deone chuẩn bị được hé lộ từng phần: không chỉ là tiền bạc, mà là một trải nghiệm sống mới\n\nĐiểm đáng chú ý là Deone vừa phát đi một thông điệp rất đáng chú ý: câu chuyện về Deone sắp được mở ra từng phần, từng tuần, từ sản phẩm, công nghệ cho đến triết lý đứng sau toàn bộ hệ sinh thái.\n\nThông điệp lần này không quá ồn ào.\n\nNhưng lại rất rõ ràng:\n\nDeone đang đến.\n\nVà khi Deone chính thức xuất hiện, đó sẽ không chỉ là một bản cập nhật sản phẩm thông thường.\n\nĐó có thể là một khoảnh khắc đặc biệt trong hành trình của WeFi, Deone và mô hình Deobanking.\n\nTheo cập nhật từ Deone, mỗi tuần mới sẽ hé lộ thêm một phần mới của hệ sinh thái này.\n\nTừ sản phẩm.\n\nCông nghệ.\n\nCách vận hành.\n\nCho đến triết lý đằng sau việc xây dựng một trải nghiệm tài chính tốt hơn cho người dùng.\n\nTuần này, Deone sẽ bắt đầu bằng những nội dung cốt lõi nhất:\n\nDeone là gì?\n\nDeone hoạt động như thế nào?\n\nVà quan trọng hơn:\n\nViệc chạm tới một cuộc sống tốt đẹp hơn thật sự có ý nghĩa gì?\n\nĐây là điểm rất đáng chú ý.\n\nVì Deone không chỉ đang nói về tiền.\n\nKhông chỉ là tài khoản.\n\nKhông chỉ là thanh toán.\n\nKhông chỉ là ngân hàng số.\n\nDeone đang muốn mở ra một trải nghiệm rộng hơn, nơi tài chính gắn với chất lượng sống, sự minh bạch, quyền kiểm soát cá nhân và cách con người xây dựng tài sản trong thế giới hiện đại.\n\nNói dễ hiểu, Deone đang đặt câu hỏi lớn hơn:\n\nMột hệ thống tài chính tốt hơn có thể giúp cuộc sống của con người tốt hơn như thế nào?\n\nĐây chính là tinh thần của Deobanking.\n\nKhông chỉ đưa ngân hàng lên blockchain.\n\nMà là nâng cấp cách người dùng tiếp cận tài chính, quản lý tài sản, di chuyển dòng tiền và tận hưởng cuộc sống.\n\nVới cá nhân, Deone có thể là cánh cửa để tiếp cận một trải nghiệm tài chính linh hoạt hơn.\n\nVới doanh nghiệp, Deone có thể là hạ tầng giúp vận hành dòng tiền và tài sản hiệu quả hơn.\n\nVới cộng đồng WeFi, Deone có thể là mảnh ghép đưa câu chuyện Onchain Banking bước gần hơn đến đời sống thật.\n\nĐiểm cốt lõi nằm ở xu hướng lớn hơn: tài chính tương lai sẽ không chỉ nằm ở việc gửi tiền, nhận tiền hay giao dịch.\n\nTài chính tương lai sẽ nằm ở trải nghiệm.\n\nỞ sự minh bạch.\n\nỞ khả năng kết nối toàn cầu.\n\nỞ quyền kiểm soát của người dùng.\n\nVà ở việc công nghệ đứng phía sau làm cho cuộc sống phía trước trở nên đơn giản hơn.\n\nNói ngắn gọn, Deone đang chuẩn bị mở ra câu chuyện của mình.\n\nTừng tuần một.\n\nTừng mảnh ghép một.\n\nTừ sản phẩm đến công nghệ.\n\nTừ công nghệ đến triết lý.\n\nTừ tài chính đến chất lượng sống.\n\nVà nếu những tín hiệu gần đây được xâu chuỗi lại, có thể thấy Deone không chỉ đang chuẩn bị ra mắt một sản phẩm.\n\nDeone đang chuẩn bị giới thiệu một chuẩn trải nghiệm mới trong hệ sinh thái WeFi.\n\nMột trải nghiệm không chỉ có ý nghĩa với tiền bạc.\n\nMà còn với toàn bộ cách người dùng sống, quản lý tài chính và xây dựng tương lai của mình.\n\nHãy cùng chờ đón.\n\nCánh cửa Deone đang mở ra từng chút một.\n\nVà chương mới của Deobanking đang đến gần hơn bao giờ hết.\n\nNhóm Dép Lào – nơi cập nhật Wefi và góc nhìn đầu tư mỗi ngày.\n\nAnh em vào Zalo tham gia cùng team 👇\nhttps://t.co/9oE7mE0HxO\nĐăng ký tài khoản đào Wefi tại đây 👇\nhttps://t.co/I79a65io1O\n\nTìm hiểu đầy đủ về dự án Wefi 👇\nhttps://t.co/XM49mQN6cF\nChỉ dành cho người nghiêm túc 🚀\n\n#Deone #WeFi #Deobanking #Deobank #OnchainBanking #DigitalFinance #ModernBanking #LifestyleFinance #FinancialFreedom #WeFiCommunity #DeoneSuites #Web3 #Blockchain #Crypto #GiaHuyCrypto",
+                "url": "https://x.com/giahuycrypto/status/2082247772938670113",
+                "source": "@giahuycrypto",
+                "date": "Tue Jul 28 23:32:10 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 0,
+                  "views": "38"
+                }
+              },
+              {
+                "title": "CHIẾN LƯỢC BÍ MẬT CỦA PI NETWORK ĐƯỢC TIẾT LỘ. LÝ DO NHÓM NÒNG CỐT LỰA CHỌN...",
+                "summary": "CHIẾN LƯỢC BÍ MẬT CỦA PI NETWORK ĐƯỢC TIẾT LỘ. LÝ DO NHÓM NÒNG CỐT LỰA CHỌN...\n\nCách tiếp cận phát triển chậm chạp của Pi Network đã gây ra nhiều thắc mắc trong cộng đồng tiền điện tử. Hãy cùng tìm hiểu lý do tại sao Nhóm Cốt lõi lại ưu tiên cơ sở hạ tầng và bảo mật.\n\nChiến lược bí mật của Pi Network đã được hé lộ? Vì sao đội ngũ cốt lõi chọn xây dựng thay vì chạy theo trào lưu tiền điện tử?\nPi Network luôn đi theo một con đường khác biệt so với nhiều dự án tiền điện tử khác. Trong khi nhiều nền tảng blockchain cạnh tranh nhau để thu hút sự chú ý thông qua các thông báo thường xuyên, các chiến dịch tiếp thị rầm rộ và sự mở rộng nhanh chóng, Pi Network lại chọn cách tiếp cận chậm rãi và có cấu trúc hơn.\n\nChiến lược này đã tạo ra những cuộc thảo luận không ngừng giữa hàng triệu người tiên phong. Một số thành viên trong cộng đồng tiền điện tử đã đặt câu hỏi tại sao nhóm nòng cốt của Pi lại không đi theo cách tiếp cận thông thường là nhanh chóng ra mắt, quảng bá và thu hút sự chú ý của thị trường.\n\nTuy nhiên, những người ủng hộ tin rằng câu trả lời nằm ở một tầm nhìn khác: xây dựng nền tảng trước khi mời thế giới tham gia.\n\nCuộc thảo luận được chia sẻ bởi cộng đồng Pi, bao gồm cả những hiểu biết từ tài khoản X @ETNnigeria, đã so sánh cách tiếp cận phát triển của Pi Network với việc xây dựng một sân bay. Trước khi cho phép hàng triệu hành khách đến, các hệ thống thiết yếu như đường băng, cơ sở hạ tầng an ninh, tháp điều khiển và thiết bị dẫn đường phải được hoàn thiện.\n\nVí dụ này nhấn mạnh ý tưởng rằng hệ sinh thái blockchain cần được chuẩn bị kỹ lưỡng trước khi có thể được áp dụng rộng rãi.\n\nVì sao Pi Network không tuân theo các mô hình tăng trưởng truyền thống của tiền điện tử?\nNhiều dự án tiền điện tử cố gắng thu hút sự chú ý một cách nhanh chóng.\n\nHọ thường tập trung vào tiếp thị, thông báo trao đổi, thảo luận về giá cả và phát triển cộng đồng trước khi công nghệ và hệ sinh thái của họ được phát triển hoàn thiện.\n\nCách tiếp cận này có thể tạo ra sự chú ý nhanh chóng, nhưng nó cũng tạo ra những thách thức.\n\nMột mạng lưới blockchain phát triển nhanh hơn cơ sở hạ tầng của nó có thể gặp khó khăn về khả năng mở rộng, bảo mật và trải nghiệm người dùng.\n\nPi Network dường như đã chọn một hướng đi khác bằng cách tập trung vào phát triển trước khi theo đuổi mở rộng quy mô lớn hơn.\n\nMục tiêu không chỉ đơn thuần là tạo ra một tài sản kỹ thuật số mà là xây dựng một hệ sinh thái có khả năng hỗ trợ hàng triệu người dùng.\n\nĐối với một dự án có cộng đồng toàn cầu rộng lớn, công tác chuẩn bị kỹ thuật trở thành yếu tố then chốt.\n\nXây dựng nền tảng trước khi áp dụng rộng rãi\nVí dụ về sân bay thể hiện một khái niệm đơn giản nhưng quan trọng.\n\nSân bay không thể hoạt động hiệu quả nếu thiếu cơ sở hạ tầng thiết yếu.\n\nHành khách cần đường băng an toàn, hệ thống dẫn đường đáng tin cậy, quy trình an ninh và hoạt động hiệu quả.\n\nTương tự, một hệ sinh thái blockchain cần có cơ sở hạ tầng vững chắc trước khi xử lý các hoạt động quy mô lớn.\n\nĐối với Pi Network, điều này bao gồm các lĩnh vực như ổn định mạng, xác minh người dùng, phát triển ứng dụng, cải tiến bảo mật và chuẩn bị hệ sinh thái.\n\nNếu thiếu những yếu tố này, sự tăng trưởng nhanh chóng có thể tạo ra các vấn đề làm tổn hại đến lòng tin của người dùng.\n\nViệc xây dựng nền tảng cẩn thận có thể mất nhiều thời gian hơn, nhưng nó có thể cung cấp sự hỗ trợ vững chắc hơn cho sự phát triển trong tương lai.\n\nTầm quan trọng của sự phát triển blockchain dài hạn\nCông nghệ blockchain rất phức tạp.\n\nViệc tạo ra một mạng lưới có thể hỗ trợ hàng triệu người dùng gặp phải nhiều thách thức, bao gồm xử lý giao dịch, bảo mật, phân quyền và hỗ trợ ứng dụng.\n\nThành công của blockchain không thể chỉ dựa vào sự phổ biến.\n\nNó cần công nghệ đáng tin cậy và các trường hợp sử dụng thực tiễn.\n\nCách tiếp cận của Pi Network phản ánh quan điểm rằng sự tăng trưởng bền vững đòi hỏi sự kiên nhẫn.\n\nThay vì chỉ tập trung vào lợi ích ngắn hạn, dự án này nhấn mạnh việc xây dựng một hệ sinh thái có thể tiếp tục phát triển theo thời gian.\n\nCách tiếp cận dài hạn này ngày càng trở nên quan trọng khi ngành công nghiệp tiền điện tử ngày càng trưởng thành.\n\nTránh áp lực của các chu kỳ cường điệu tiền điện tử\nThị trường tiền điện tử nổi tiếng với những biến động nhanh chóng.\n\nCác dự án có thể đột nhiên trở nên phổ biến trong các xu hướng thị trường, nhưng duy trì sự phù hợp lâu dài lại khó khăn hơn nhiều.\n\nNhiều dự án blockchain đã nhanh chóng thu hút sự chú ý nhưng lại gặp khó khăn khi cần mang lại tiện ích thực sự.\n\nCách tiếp cận chậm rãi hơn của Pi Network có thể được thiết kế để tránh phụ thuộc hoàn toàn vào sự cường điệu.\n\nBằng cách tập trung vào phát triển cơ sở hạ tầng và hệ sinh thái, dự án hướng đến việc tạo ra giá trị thông qua việc sử dụng thực tế chứ không phải chỉ là sự hào hứng nhất thời trên thị trường.\n\nChiến lược này phù hợp với phong trào Web3 rộng lớn hơn, nơi tính hữu dụng và sự tham gia của người dùng ngày càng trở nên quan trọng.\n\nPi Network tập trung vào sự sẵn sàng của hệ sinh thái.\nMột mạng lưới blockchain cần nhiều hơn là chỉ một đồng tiền.\n\nĐiều đó đòi hỏi các nhà phát triển tạo ra ứng dụng, các doanh nghiệp tìm hiểu về việc áp dụng và người dùng tương tác với các dịch vụ.\n\nNếu thiếu một hệ sinh thái năng động, tài sản kỹ thuật số có thể có mục đích sử dụng thực tiễn hạn chế.\n\nPi Network tập trung vào việc tạo ra một môi trường nơi các thành viên khác nhau có thể đóng góp.\n\nCác nhà phát triển cần công cụ và cơ sở hạ tầng để xây dựng ứng dụng.\n\nCác doanh nghiệp cần có sự tin tưởng rằng mạng lưới có thể hỗ trợ các giao dịch.\n\nNgười dùng cần những trải nghiệm đơn giản và hữu ích.\n\nViệc chuẩn bị các yếu tố này trước khi mở rộng quy mô lớn có thể giúp tạo ra một hệ sinh thái bền vững hơn.\n\nVì sao cơ sở hạ tầng lại quan trọng đối với tương lai của Pi Coin?\nĐể Pi Coin được chấp nhận rộng rãi hơn, mạng lưới này phải có khả năng xử lý các hoạt động trong thế giới thực.\n\nMột loại tiền kỹ thuật số được sử dụng rộng rãi cần có tốc độ, bảo mật, độ tin cậy và khả năng truy cập dễ dàng.\n\nNếu hàng triệu người bắt đầu sử dụng blockchain cùng lúc, hệ thống cần phải được chuẩn bị sẵn sàng.\n\nĐây là lý do tại sao phát triển cơ sở hạ tầng lại là một phần quan trọng của các dự án blockchain.\n\nThành công trong tương lai của Pi Coin sẽ phụ thuộc không chỉ vào sự quan tâm của cộng đồng mà còn vào việc liệu mạng lưới này có thể mang lại giá trị thực tiễn hay không.\n\nSự sẵn sàng về công nghệ sẽ đóng vai trò quan trọng trong việc quyết định sự phát triển của hệ sinh thái.\n\nTăng trưởng cộng đồng như một lợi thế chiến lược\nMột trong những thế mạnh quan trọng nhất của Pi Network là cộng đồng toàn cầu rộng lớn của nó.\n\nHàng triệu người tiên phong đã tham gia vào hành trình phát triển của dự án.\n\nCộng đồng này tạo nền tảng vững chắc cho việc nhận con nuôi trong tương lai.\n\nTuy nhiên, một lượng lớn người dùng cần được hỗ trợ bởi một hệ sinh thái hoạt động hiệu quả.\n\nSự kết hợp giữa sự tham gia của cộng đồng và phát triển công nghệ tạo ra cơ hội mạnh mẽ hơn cho sự tăng trưởng dài hạn.\n\nNếu Pi Network có thể kết nối thành công người dùng, ứng dụng và doanh nghiệp, hệ sinh thái này có thể trở nên có giá trị hơn theo thời gian.\n\nVai trò của lòng tin và sự chuẩn bị\nLòng tin là yếu tố thiết yếu trong ngành công nghệ  tài chính .\n\nNgười dùng cần có niềm tin rằng nền tảng có thể hoạt động một cách an toàn và đáng tin cậy.\n\nViệc phát triển vội vàng mà không có sự chuẩn bị kỹ lưỡng có thể tạo ra nhiều rủi ro.\n\nBằng cách tập trung vào cơ sở hạ tầng trước tiên, Pi Network hướng đến việc xây dựng nền tảng vững chắc hơn trước khi bước vào các giai đoạn áp dụng rộng rãi hơn.\n\nCách tiếp cận này có thể giúp tạo ra một môi trường ổn định hơn cho người dùng và nhà phát triển.\n\nVề lâu dài, lòng tin có thể trở thành một trong những yếu tố quan trọng nhất ảnh hưởng đến việc áp dụng công nghệ blockchain.\n\nNhững thách thức của chiến lược xây dựng chậm\nMặc dù chiến lược phát triển cẩn trọng mang lại nhiều lợi thế, nhưng nó cũng tạo ra những thách thức.\n\nNgành công nghiệp tiền điện tử phát triển nhanh chóng và cạnh tranh ngày càng gay gắt.\n\nCác dự án cần phải cân bằng giữa sự kiên nhẫn và nhu cầu chứng minh tiến độ.\n\nNhững kỳ vọng của cộng đồng cũng tạo ra áp lực.\n\nHàng triệu người tiên phong đang chờ đợi để xem hệ sinh thái phát triển như thế nào và tầm nhìn của Pi Network trở thành hiện thực ra sao.\n\nViệc duy trì liên lạc và thể hiện tiến độ có ý nghĩa sẽ vẫn rất quan trọng khi dự án tiếp tục phát triển.\n\nTương lai của Pi Network: Xây dựng trước khi mở rộng\nQuyết định tập trung xây dựng trước thay vì chạy theo những tin tức giật gân thể hiện một triết lý khác biệt trong ngành công nghiệp tiền điện tử.\n\nThay vì chỉ tập trung vào sự chú ý trước mắt, Pi Network dường như đang tập trung vào việc tạo dựng nền tảng cần thiết cho sự phát triển trong tương lai.\n\nVí dụ về sân bay minh họa rõ ràng cách tiếp cận này.\n\nMột sân bay thành công đòi hỏi sự chuẩn bị kỹ lưỡng trước khi đón hàng triệu hành khách.\n\nTương tự, một hệ sinh thái blockchain thành công cần có cơ sở hạ tầng trước khi hỗ trợ hàng triệu người dùng.\n\nThành công trong tương lai của Pi Network sẽ phụ thuộc vào việc dự án này chuyển đổi nền tảng của mình thành tiện ích thực tiễn hiệu quả đến mức nào.\n\nPhần kết luận\nQuyết định của Pi Network ưu tiên xây dựng hơn là tạo sự chú ý đã trở thành một trong những khía cạnh được thảo luận nhiều nhất của dự án.\n\nTrong khi một số nhà quan sát đặt câu hỏi về cách tiếp cận chậm rãi này, những người ủng hộ tin rằng sự chuẩn bị kỹ lưỡng là cần thiết để tạo ra một hệ sinh thái blockchain bền vững.\n\nNền tảng vững chắc, công nghệ đáng tin cậy và tính ứng dụng thực tiễn là những yếu tố thiết yếu cho sự thành công lâu dài.\n\nKhi ngành công nghiệp tiền điện tử tiếp tục phát triển, các dự án tập trung vào giá trị thực sự thay vì lợi ích ngắn hạn có thể có cơ hội tạo ra tác động lâu dài hơn.\n\nĐối với Pi Network, hành trình không chỉ đơn thuần là ra mắt một loại tiền điện tử mà còn là xây dựng một hệ sinh thái có khả năng hỗ trợ nền kinh tế kỹ thuật số toàn cầu.\n\nTheo Victoria Hale",
+                "url": "https://x.com/Inter_Saigon/status/2081997300600389817",
+                "source": "@Inter_Saigon",
+                "date": "Tue Jul 28 06:56:52 +0000 2026",
+                "metrics": {
+                  "favorites": 11,
+                  "retweets": 0,
+                  "views": "694"
+                }
+              },
+              {
+                "title": "THỬ THÁCH LỚN NHẤT CỦA PI NETWORK ĐÃ ĐƯỢC HÉ LỘ: 7 YẾU TỐ NÀY CÓ THỂ",
+                "summary": "THỬ THÁCH LỚN NHẤT CỦA PI NETWORK ĐÃ ĐƯỢC HÉ LỘ: 7 YẾU TỐ NÀY CÓ THỂ\n\nPi Network hướng đến mục tiêu trở thành nhiều hơn một tài sản kỹ thuật số bằng cách xây dựng tiện ích thực tiễn. Khám phá các yếu tố then chốt cần thiết cho việc chấp nhận Pi Coin, bao gồm...\n\nThử thách lớn nhất của Pi Network đã được hé lộ! 7 yếu tố này có thể quyết định liệu Pi Coin có trở thành tiền tệ thực sự hay không.\nMạng lưới Pi Network đang tiếp tục tiến đến giai đoạn quan trọng trong quá trình phát triển khi cộng đồng thảo luận về một trong những câu hỏi quan trọng nhất xoay quanh dự án: liệu Pi Coin có thể trở thành một loại tiền điện tử được sử dụng cho các giao dịch hàng ngày hay không?\n\nTrong khi nhiều cuộc thảo luận trong ngành công nghiệp tiền điện tử tập trung chủ yếu vào biến động giá cả, đầu cơ thị trường và hoạt động giao dịch, thì sự thành công lâu dài của bất kỳ tài sản kỹ thuật số nào lại phụ thuộc vào một yếu tố cơ bản hơn nhiều: tính hữu dụng trong thế giới thực.\n\nMột loại tiền điện tử trở nên có giá trị khi mọi người có những lý do thiết thực để sử dụng nó.\n\nĐối với Pi Network, thách thức không chỉ là tạo ra một lượng lớn người dùng mà còn là xây dựng một hệ sinh thái nơi hàng triệu người tiên phong, doanh nghiệp và nhà phát triển có thể tích cực sử dụng Pi trong các hoạt động hàng ngày.\n\nCác cuộc thảo luận gần đây được cộng đồng Pi chia sẻ, bao gồm cả những hiểu biết từ tài khoản X @HienPi61, đã nêu bật một số yếu tố quan trọng có thể quyết định liệu Pi có phát triển thành một loại tiền tệ kỹ thuật số được sử dụng rộng rãi hay không.\n\nTừ việc thu hút người bán và tốc độ giao dịch nhanh chóng đến sự phát triển hệ sinh thái và tuân thủ quy định, mỗi yếu tố đều đóng vai trò quan trọng trong việc định hình tương lai của Pi Network.\n\nGiá cả không phải là yếu tố duy nhất quyết định sự thành công của Pi Network.\nTrong thế giới tiền điện tử, giá cả thường trở thành chủ đề thảo luận chính.\n\nNhiều nhà đầu tư tập trung vào giá trị thị trường tiềm năng, việc niêm yết trên sàn giao dịch và dự đoán giá trong tương lai.\n\nTuy nhiên, lịch sử đã chứng minh rằng sự thành công lâu dài của một loại tiền điện tử phụ thuộc vào nhiều yếu tố hơn là chỉ sự đầu cơ giá cả.\n\nTài sản kỹ thuật số cần được sử dụng thực tế để tạo ra giá trị bền vững.\n\nNếu mọi người sử dụng Pi để mua hàng hóa, các doanh nghiệp chấp nhận thanh toán bằng Pi và các ứng dụng cung cấp các dịch vụ hữu ích, hệ sinh thái có thể phát triển một cách tự nhiên.\n\nNếu thiếu tính hữu dụng, ngay cả một loại tiền điện tử có cộng đồng người dùng lớn cũng khó có thể duy trì được tầm quan trọng lâu dài.\n\nĐối với Pi Network, việc xây dựng các ứng dụng thực tiễn và khuyến khích sử dụng trong thế giới thực có lẽ sẽ là một trong những bước quan trọng nhất trong hành trình phát triển của họ.\n\n1. Mọi người phải có khả năng sử dụng Pi cho các giao dịch hàng ngày.\nYêu cầu đầu tiên đối với bất kỳ loại tiền tệ nào là tính khả dụng.\n\nNếu Pi Coin được kỳ vọng trở thành một phần của hoạt động thương mại hàng ngày, người dùng cần những cách thức đơn giản để sử dụng nó.\n\nĐiều này bao gồm việc sử dụng Pi để mua sắm, thanh toán dịch vụ và hoàn tất các giao dịch trong các tình huống thực tế.\n\nMột loại tiền tệ trở nên mạnh hơn khi mọi người có thể dễ dàng trao đổi nó để lấy hàng hóa và dịch vụ.\n\nĐối với Pi Network, việc tăng số lượng người bán chấp nhận thanh toán có thể trở thành một cột mốc quan trọng.\n\nKhi người dùng có nhiều cơ hội hơn để sử dụng Pi, hệ sinh thái sẽ trở nên năng động và có ý nghĩa hơn.\n\nCác giao dịch thực tế tạo ra nhu cầu, khuyến khích sự tham gia và giúp chứng minh giá trị thực tiễn của mạng lưới.\n\n2. Các doanh nghiệp cần có động lực để chấp nhận Pi\nViệc các nhà bán lẻ chấp nhận đồng tiền kỹ thuật số là một yếu tố quan trọng khác trong việc xây dựng một loại tiền kỹ thuật số thành công.\n\nCác doanh nghiệp cần có lý do rõ ràng để chấp nhận Pi như một phương thức thanh toán.\n\nNhững lý do này có thể bao gồm việc tiếp cận cộng đồng người dùng rộng lớn, chi phí giao dịch thấp hơn, thanh toán nhanh hơn và cơ hội tham gia vào nền kinh tế kỹ thuật số đang phát triển.\n\nĐối với doanh nghiệp, hệ thống thanh toán phải mang lại sự tiện lợi và độ tin cậy.\n\nNếu việc chấp nhận Pi có thể giúp các nhà bán lẻ tiếp cận được nhiều khách hàng hơn đồng thời mang lại các giao dịch hiệu quả, thì tỷ lệ chấp nhận Pi có thể tăng lên.\n\nMối quan hệ bền chặt giữa người dùng và doanh nghiệp là yếu tố thiết yếu để tạo ra một hệ sinh thái thanh toán bền vững.\n\n3. Giao dịch nhanh chóng và phí thấp là điều thiết yếu.\nHệ thống thanh toán phải hiệu quả.\n\nNgười dùng mong muốn các giao dịch được hoàn tất nhanh chóng và với chi phí hợp lý.\n\nPhí cao hoặc thời gian xử lý chậm có thể ngăn cản mọi người sử dụng tiền điện tử cho các hoạt động hàng ngày.\n\nCác mạng blockchain hướng đến hỗ trợ thanh toán hàng ngày cần có cơ sở hạ tầng có khả năng xử lý số lượng lớn giao dịch mà không làm giảm tốc độ hoặc độ tin cậy.\n\nĐối với Pi Network, việc tiếp tục cải tiến công nghệ blockchain sẽ rất quan trọng để đảm bảo mạng lưới có thể hỗ trợ hoạt động ngày càng tăng.\n\nKhi ngày càng nhiều người dùng và ứng dụng tham gia vào hệ sinh thái, khả năng mở rộng sẽ trở thành yếu tố then chốt.\n\n4. Trải nghiệm ví điện tử đơn giản và tiện lợi\nViệc áp dụng công nghệ phụ thuộc rất nhiều vào trải nghiệm người dùng.\n\nNgay cả những hệ thống blockchain tiên tiến cũng có thể gặp khó khăn nếu chúng quá khó hiểu đối với người dùng thông thường.\n\nMột loại tiền điện tử thành công cần có hệ thống ví điện tử đơn giản, an toàn và tiện lợi.\n\nNgười dùng có thể gửi, nhận và quản lý Pi một cách dễ dàng mà không cần kiến ​​thức kỹ thuật nâng cao.\n\nMột ví điện tử thân thiện với người dùng có thể giúp nhiều người tiếp cận công nghệ blockchain hơn và khuyến khích việc áp dụng rộng rãi hơn.\n\nĐối với Pi Network, việc cải thiện khả năng tiếp cận sẽ rất quan trọng khi hệ sinh thái mở rộng ra ngoài phạm vi những người dùng ban đầu.\n\n5. Một hệ sinh thái ứng dụng ngày càng phát triển\nMột loại tiền điện tử sẽ trở nên hữu ích hơn khi được hỗ trợ bởi một hệ sinh thái mạnh mẽ.\n\nCác ứng dụng tạo ra lý do để người dùng tương tác thường xuyên với mạng blockchain.\n\nĐối với Pi Network, việc phát triển các ứng dụng phi tập trung, thị trường và dịch vụ kỹ thuật số có thể làm tăng tính ứng dụng thực tiễn của Pi Coin.\n\nCác nhà phát triển đóng vai trò quan trọng trong quá trình này.\n\nCàng có nhiều ứng dụng hữu ích, hệ sinh thái càng trở nên có giá trị.\n\nMột môi trường ứng dụng phát triển mạnh mẽ có thể giúp Pi chuyển đổi từ một dự án tập trung vào cộng đồng thành một nền tảng Web3 rộng lớn hơn.\n\n6. Tuân thủ pháp luật và xác minh danh tính khách hàng (KYC) xây dựng lòng tin\nLòng tin là một trong những yếu tố quan trọng nhất trong hệ thống tài chính.\n\nĐể tiền kỹ thuật số được chấp nhận rộng rãi hơn, người dùng và doanh nghiệp cần có niềm tin rằng hệ sinh thái tuân thủ các tiêu chuẩn phù hợp.\n\nViệc Pi Network tập trung vào xác minh KYC nhằm mục đích tạo ra một môi trường đáng tin cậy hơn bằng cách kết nối người dùng với các danh tính đã được xác minh.\n\nViệc tuân thủ quy định cũng ngày càng trở nên quan trọng khi các chính phủ trên toàn thế giới xây dựng các khuôn khổ pháp lý rõ ràng hơn về tiền điện tử.\n\nCác dự án chú trọng đến các yêu cầu pháp lý có thể có cơ hội hợp tác với các doanh nghiệp và tổ chức mạnh mẽ hơn trong tương lai.\n\nTuân thủ không đảm bảo thành công, nhưng nó có thể tạo nền tảng quan trọng cho sự tăng trưởng bền vững.\n\n7. Phát triển liên tục chuỗi khối\nMột công nghệ blockchain thành công phải liên tục được cải tiến theo thời gian.\n\nCông nghệ phát triển nhanh chóng, và mạng lưới phải thích ứng để đáp ứng nhu cầu ngày càng tăng.\n\nĐể Pi Network có thể hỗ trợ hàng triệu giao dịch mỗi ngày, việc phát triển liên tục là điều cần thiết.\n\nĐiều này bao gồm việc cải thiện hiệu suất mạng, tăng cường bảo mật và đảm bảo chuỗi khối có thể xử lý khối lượng hoạt động lớn hơn.\n\nViệc nâng cấp thường xuyên thể hiện cam kết phát triển lâu dài.\n\nNền tảng kỹ thuật vững chắc là yếu tố thiết yếu để hỗ trợ các ứng dụng trong tương lai và việc áp dụng rộng rãi hơn.\n\nTầm quan trọng của việc xây dựng một nền kinh tế số hoàn chỉnh\nTầm nhìn của Pi Network không chỉ dừng lại ở việc tạo ra một loại tiền điện tử khác.\n\nMục tiêu là phát triển một hệ sinh thái nơi người dùng, doanh nghiệp và nhà phát triển có thể tương tác thông qua công nghệ blockchain.\n\nMột nền kinh tế số hoàn chỉnh đòi hỏi nhiều thành phần phải phối hợp hoạt động cùng nhau.\n\nNgười dùng cần có lý do để chi tiêu Pi.\n\nCác doanh nghiệp cần có lý do để chấp nhận số Pi.\n\nCác nhà phát triển cần các công cụ để xây dựng ứng dụng.\n\nCông nghệ blockchain cần cung cấp cơ sở hạ tầng đáng tin cậy.\n\nKhi các yếu tố này kết hợp lại, tiền điện tử sẽ có cơ hội tạo ra giá trị bền vững cao hơn.\n\nCon đường hướng tới tiện ích thực sự của Pi Network\nQuá trình chuyển đổi từ tài sản kỹ thuật số sang tiền tệ thông thường là một thách thức.\n\nNhiều dự án tiền điện tử đã cố gắng đạt được sự chấp nhận rộng rãi nhưng gặp khó khăn vì thiếu các trường hợp sử dụng thực tiễn.\n\nCộng đồng lớn mạnh của Pi Network là một điểm khởi đầu vững chắc, nhưng chỉ quy mô cộng đồng thôi là chưa đủ.\n\nGiai đoạn tiếp theo phụ thuộc vào việc chuyển đổi sự tham gia thành hoạt động kinh tế thực tế.\n\nSự phát triển của các nhà bán lẻ, ứng dụng, giải pháp thanh toán và cơ sở hạ tầng đáng tin cậy sẽ quyết định Pi Network có thể tiến xa đến đâu.\n\nTriển vọng tương lai về việc chấp nhận Pi Coin\nTương lai của Pi Coin sẽ phụ thuộc vào việc thực thi.\n\nDự án cần tiếp tục cải tiến công nghệ, mở rộng tiện ích, hỗ trợ các nhà phát triển và xây dựng lòng tin giữa người dùng.\n\nNếu Pi Network thành công trong việc tạo ra một hệ sinh thái nơi mọi người có thể sử dụng Pi một cách tự nhiên trong các hoạt động hàng ngày, mạng lưới này có thể củng cố vị thế của mình trong ngành công nghiệp Web3.\n\nQuá trình chuyển đổi từ một loại tiền điện tử do cộng đồng phát triển sang một loại tiền kỹ thuật số được sử dụng rộng rãi đòi hỏi sự kiên nhẫn và phát triển liên tục.\n\nPhần kết luận\nTiềm năng của Pi Network với tư cách là một loại tiền tệ sử dụng hàng ngày sẽ không chỉ được quyết định bởi giá cả.\n\nNền tảng thực sự của thành công lâu dài là tính hữu dụng trong thế giới thực.\n\nĐể Pi Coin trở thành một phương thức thanh toán thiết thực, hệ sinh thái cần có sự chấp nhận mạnh mẽ từ phía người bán, giao dịch nhanh chóng, ví điện tử đơn giản, ứng dụng hữu ích, tuân thủ quy định và phát triển blockchain liên tục.\n\nTương lai của Pi Network sẽ phụ thuộc vào việc nó chuyển đổi cộng đồng toàn cầu rộng lớn của mình thành một nền kinh tế kỹ thuật số năng động hiệu quả đến mức nào.\n\nNếu những yếu tố này tiếp tục phát triển song song, Pi Network có thể tiến gần hơn đến tầm nhìn tạo ra một hệ sinh thái tiền điện tử được xây dựng dựa trên việc sử dụng thực tế, sự tham gia và đổi mới Web3.\n\nTheo Victoria Hale",
+                "url": "https://x.com/Inter_Saigon/status/2081996809220792702",
+                "source": "@Inter_Saigon",
+                "date": "Tue Jul 28 06:54:55 +0000 2026",
+                "metrics": {
+                  "favorites": 12,
+                  "retweets": 2,
+                  "views": "662"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "tool": "format",
+          "args": {
+            "items": [
+              {
+                "title": "Tin công nghệ trong tuần này",
+                "url": "https://example.com/tin-cong-nghe-trong-tuan-nay"
+              }
+            ],
+            "template": "brief",
+            "headline": "Tin công nghệ trong tuần này"
+          },
+          "result": {
+            "tool": "render_digest",
+            "template": "brief",
+            "markdown": "**Tin công nghệ trong tuần này**\n\n- Tin công nghệ trong tuần này - [example.com](https://example.com/tin-cong-nghe-trong-tuan-nay)",
+            "item_count": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "R07_search_type_arg",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "arg_search_type",
+        "difficulty": "medium",
+        "what_it_tests": "'phổ biến/top' → search_type=Top (không phải Latest)."
+      },
+      "input": "Cho mình các tweet phổ biến (top) nhất về OpenAI",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "social_search",
+            "args": {
+              "search_type": "Top"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "social_search",
+            "args": {
+              "query": "OpenAI",
+              "search_type": "Top"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "social_search",
+          "args": {
+            "query": "OpenAI",
+            "search_type": "Top"
+          },
+          "result": {
+            "tool": "search_tweets",
+            "query": "OpenAI",
+            "search_type": "Top",
+            "items": [
+              {
+                "title": "OPENAI IS SO WORRIED THEY HAVE PAUSED TRAINING",
+                "summary": "OPENAI IS SO WORRIED THEY HAVE PAUSED TRAINING\n\n“This is the first security incident that I have felt very viscerally. I've been a little surprised that more people don't feel it so viscerally.\n\nWe paused training. We have to figure out how to secure our sandboxing in a world of multiple zero days being chained together.\n\nWe may have to pace the rate of AI development to give ourselves enough time for society to harden around these new capability levels.\"",
+                "url": "https://x.com/AISafetyMemes/status/2082222516454785296",
+                "source": "@AISafetyMemes",
+                "date": "Tue Jul 28 21:51:48 +0000 2026",
+                "metrics": {
+                  "favorites": 578,
+                  "retweets": 44,
+                  "views": "109537"
+                }
+              },
+              {
+                "title": "Sam Altman, CEO of OpenAI: ",
+                "summary": "Sam Altman, CEO of OpenAI: \n\n\"It figured out that it could basically cheat on the test by chaining together multiple zero-day exploits to break out of the sandbox, get access to the internet, and then break through multiple systems on the Hugging Face side to get the answer to the test and look really good on the eval.\"\n\nThat was an unreleased model. Nobody asked it to hack anything. They asked it to score well.\n\nThey paused training.\n\nIt was not trying to escape. It was trying to pass. Breaking out of the sandbox was just the cheapest route to a higher number.\n\nWe keep testing these systems for whether they want to hurt us. This one just wanted a good grade.",
+                "url": "https://x.com/caspr_exe/status/2082153657424834624",
+                "source": "@caspr_exe",
+                "date": "Tue Jul 28 17:18:11 +0000 2026",
+                "metrics": {
+                  "favorites": 89,
+                  "retweets": 7,
+                  "views": "9900"
+                }
+              },
+              {
+                "title": "Sam Altman, CEO of OpenAI:",
+                "summary": "Sam Altman, CEO of OpenAI:\n\n\"by March of 2028, we will have a full end to end, very talented researcher figuring out completely new architectures.\"\n\nNot an assistant. Not autocomplete for scientists. A system that does the research that produces the next system.\n\nIn 1965 the statistician I. J. Good wrote that the first ultraintelligent machine is the last invention man need ever make. For sixty years that sentence lived in philosophy papers. Altman just put it on a roadmap with a quarter attached.\n\nHe also says: \"with an affordable amount of spend on tokens, you can do what a 100-person, incredibly great engineering team would do as a startup.\"\n\nSixty years of arguing about whether the last invention is possible. Nobody expected the answer to arrive as a delivery date.",
+                "url": "https://x.com/caspr_exe/status/2082072104044753306",
+                "source": "@caspr_exe",
+                "date": "Tue Jul 28 11:54:07 +0000 2026",
+                "metrics": {
+                  "favorites": 273,
+                  "retweets": 33,
+                  "views": "49441"
+                }
+              },
+              {
+                "title": "Stocks should be ripping today given the move in oil.  But they're not thanks to $NVDA and it's unbelievable $250 Billio",
+                "summary": "Stocks should be ripping today given the move in oil.  But they're not thanks to $NVDA and it's unbelievable $250 Billion roundtrip with OpenAI. There's no hiding anymore that the whole AI bubble is really just the biggest accounting fraud in human history.  \n\nCan you hear me now?",
+                "url": "https://x.com/JG_Nuke/status/2081766403028250881",
+                "source": "@JG_Nuke",
+                "date": "Mon Jul 27 15:39:22 +0000 2026",
+                "metrics": {
+                  "favorites": 598,
+                  "retweets": 99,
+                  "views": "39334"
+                }
+              },
+              {
+                "title": "Sam on being a parent while running OpenAI:",
+                "summary": "Sam on being a parent while running OpenAI:\n\n“I think I have the best, most interesting job in the world, and it is still a very distant second to having kids.”\n\n“My kids will never grow up in a world where they were smarter than computers.”\n\n“People ask me, now that you have kids, do you care more about AI safety?\n\nThe answer is, I didn't need kids for that. I really didn't want to destroy the world before.”",
+                "url": "https://x.com/patrick_oshag/status/2082233387520331948",
+                "source": "@patrick_oshag",
+                "date": "Tue Jul 28 22:35:00 +0000 2026",
+                "metrics": {
+                  "favorites": 75,
+                  "retweets": 3,
+                  "views": "43797"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "R08_out_of_scope",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "out_of_scope",
+        "difficulty": "easy",
+        "what_it_tests": "Câu ngoài phạm vi research → KHÔNG gọi tool, từ chối/định hướng."
+      },
+      "input": "Giải giúp mình bài toán tích phân: nguyên hàm của x^2 là gì?",
+      "expect": {
+        "no_tool": true,
+        "behavior": "refuse"
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": false,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "format",
+            "args": {
+              "template": "brief",
+              "items": "[{'section': 'Toán bái', 'source': 'Tái liệu nội bộ', 'summary': 'Ngùn hàm cô x^2 là ông hàm cô công áp', 'title': 'Ngùn hàm cô x^2', 'url': 'https://tai-lieu-noi-bo.com/ngon-ham-co-x2'}]",
+              "headline": "Ngùn hàm cô x^2"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "out_of_scope",
+        "observed_mismatch": "unexpected_tool_call",
+        "failure_type": "out_of_scope",
+        "failures": [
+          "expected no tool call"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "format",
+          "args": {
+            "template": "brief",
+            "items": "[{'section': 'Toán bái', 'source': 'Tái liệu nội bộ', 'summary': 'Ngùn hàm cô x^2 là ông hàm cô công áp', 'title': 'Ngùn hàm cô x^2', 'url': 'https://tai-lieu-noi-bo.com/ngon-ham-co-x2'}]",
+            "headline": "Ngùn hàm cô x^2"
+          },
+          "result": {
+            "error": "AttributeError",
+            "message": "'str' object has no attribute 'get'"
+          }
+        }
+      ]
+    },
+    {
+      "id": "R09_no_tool_capability",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "no_tool_meta",
+        "difficulty": "easy",
+        "what_it_tests": "Câu hỏi meta → trả lời thẳng, KHÔNG gọi tool."
+      },
+      "input": "Bạn là gì và làm được những gì?",
+      "expect": {
+        "no_tool": true,
+        "behavior": "answer_without_tool"
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": false,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "text",
+              "question": "Bạn là gì và làm được những gì?"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "unnecessary_tool",
+        "observed_mismatch": "unexpected_tool_call",
+        "failure_type": "unnecessary_tool",
+        "failures": [
+          "expected no tool call"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "clarify",
+          "args": {
+            "response_type": "text",
+            "question": "Bạn là gì và làm được những gì?"
+          },
+          "result": {
+            "tool": "ask_user",
+            "question": "Bạn là gì và làm được những gì?",
+            "response_type": "text",
+            "options": [],
+            "awaiting_user": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "R10_missing_handle",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "clarify_missing_handle",
+        "difficulty": "medium",
+        "what_it_tests": "Thiếu handle → ask_user, KHÔNG đoán bừa người nào."
+      },
+      "input": "Tóm tắt 5 tweet mới nhất giúp mình",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "text"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": false,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "format",
+            "args": {
+              "items": [
+                {
+                  "section": "Tweets mới nhất của @nguyenvanduoc1"
+                },
+                {
+                  "source": "Twitter",
+                  "summary": "Tweets mới nhất của @nguyenvanduoc1",
+                  "section": "Tweets mới nhất của @nguyenvanduoc1"
+                },
+                {
+                  "title": "Tweets mới nhất của @nguyenvanduoc1",
+                  "url": "https://twitter.com/nguyenvanduoc1",
+                  "source": "Twitter",
+                  "summary": "Tweets mới nhất của @nguyenvanduoc1"
+                }
+              ],
+              "template": "brief",
+              "headline": "Tweets mới nhất"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "missing_info",
+        "observed_mismatch": "missing_tool_call",
+        "failure_type": "missing_info",
+        "failures": [
+          "missing tool call clarify",
+          "extra tool call format"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "format",
+          "args": {
+            "items": [
+              {
+                "section": "Tweets mới nhất của @nguyenvanduoc1"
+              },
+              {
+                "source": "Twitter",
+                "summary": "Tweets mới nhất của @nguyenvanduoc1",
+                "section": "Tweets mới nhất của @nguyenvanduoc1"
+              },
+              {
+                "title": "Tweets mới nhất của @nguyenvanduoc1",
+                "url": "https://twitter.com/nguyenvanduoc1",
+                "source": "Twitter",
+                "summary": "Tweets mới nhất của @nguyenvanduoc1"
+              }
+            ],
+            "template": "brief",
+            "headline": "Tweets mới nhất"
+          },
+          "result": {
+            "tool": "render_digest",
+            "template": "brief",
+            "markdown": "**Tweets mới nhất**\n\n-  - \n- Tweets mới nhất của @nguyenvanduoc1 - Twitter\n- Tweets mới nhất của @nguyenvanduoc1 - [Twitter](https://twitter.com/nguyenvanduoc1)",
+            "item_count": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "R11_missing_url",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "clarify_missing_url",
+        "difficulty": "medium",
+        "what_it_tests": "Nói 'bài này' nhưng không có link → ask_user xin URL."
+      },
+      "input": "Tóm tắt bài viết này hộ mình",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "text"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": false,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "format",
+            "args": {
+              "items": [
+                {
+                  "title": "Bài viết này",
+                  "summary": "Một bài viết về một chủ đề",
+                  "section": "Tóm tắt"
+                }
+              ],
+              "template": "brief",
+              "headline": "Tóm tắt bài viết này"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "missing_info",
+        "observed_mismatch": "missing_tool_call",
+        "failure_type": "missing_info",
+        "failures": [
+          "missing tool call clarify",
+          "extra tool call format"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "format",
+          "args": {
+            "items": [
+              {
+                "title": "Bài viết này",
+                "summary": "Một bài viết về một chủ đề",
+                "section": "Tóm tắt"
+              }
+            ],
+            "template": "brief",
+            "headline": "Tóm tắt bài viết này"
+          },
+          "result": {
+            "tool": "render_digest",
+            "template": "brief",
+            "markdown": "**Tóm tắt bài viết này**\n\n- Một bài viết về một chủ đề - ",
+            "item_count": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "R12_confirm_before_send",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "confirm_before_write",
+        "difficulty": "medium",
+        "what_it_tests": "Hành động ghi (gửi) → xác nhận trước (ask_user yes_no), không tự gửi."
+      },
+      "input": "Đăng bản tin này lên Telegram giúp mình",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "yes_no"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": false,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "send",
+            "args": {
+              "text": "Bản tin này sẽ được gửi lên Telegram"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_boundary",
+        "observed_mismatch": "missing_tool_call",
+        "failure_type": "wrong_boundary",
+        "failures": [
+          "missing tool call clarify",
+          "extra tool call send"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "send",
+          "args": {
+            "text": "Bản tin này sẽ được gửi lên Telegram"
+          },
+          "result": {
+            "tool": "send_telegram",
+            "status": "needs_confirmation",
+            "message": "Only send after the user explicitly confirms."
+          }
+        }
+      ]
+    },
+    {
+      "id": "R13_parallel_web_and_tweets",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "parallel_tool_calls",
+        "difficulty": "hard",
+        "what_it_tests": "Một request cần hai nguồn → gọi cả web_search và search_tweets; eval không phụ thuộc thứ tự tool call."
+      },
+      "input": "Tìm trên web tin AI hôm nay và tìm thêm tweet về AI.",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "AI",
+              "topic": "news",
+              "timeframe": "day"
+            }
+          },
+          {
+            "name": "social_search",
+            "args": {
+              "query": "AI"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": true,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "AI hôm nay",
+              "topic": "news",
+              "timeframe": "day"
+            }
+          },
+          {
+            "name": "social_search",
+            "args": {
+              "query": "AI",
+              "search_type": "Latest"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": "wrong_arg_value",
+        "failure_type": "wrong_tool",
+        "failures": [
+          "query: expected 'AI', got 'AI hôm nay'"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "lookup",
+          "args": {
+            "query": "AI hôm nay",
+            "topic": "news",
+            "timeframe": "day"
+          },
+          "result": {
+            "tool": "web_search",
+            "query": "AI hôm nay",
+            "topic": "news",
+            "timeframe": "day",
+            "items": [
+              {
+                "title": "CNBC Daily Open: Chipping away at the AI boom - CNBC",
+                "url": "https://www.cnbc.com/2026/07/28/daily-open-ai-boom-chip-selloff-sk-hynix.html",
+                "source": "cnbc.com",
+                "summary": "# CNBC Daily Open: Chipping away at the AI boom. * Heavy selling across Asia's biggest tech firms shows more jitters around the AI trade. * Nvidia shares sink on OpenAI funding report, allowing Apple to regain the crown of the world's most valuable company. * Oil prices continue to decline as de-escalation hopes are raised between the U.S. and Iran. *The Nasdaq-South Korea feedback loop continues to link the AI trade from one side of the globe to the other, and today it's to the downside.*. Tuesday's trading in Asia saw Samsung and SK Hynix plunge, driving a 10% drop on South Korea's Kospi. This allowed Apple to regain its crown as the world's most valuable company at $4.95 trillion. France and Spain are bracing for another heatwave, which could exacerbate the wildfires still raging across parts of both countries. Over the course of Monday, more regions across both France and Spain were evacuated, as firefighters fought to keep the fires away from major cities.",
+                "score": 0.47329262
+              },
+              {
+                "title": "Senate confirms Jay Clayton as new intelligence czar - The Washington Post",
+                "url": "https://www.washingtonpost.com/national-security/2026/07/28/senate-confirms-jay-clayton-new-intelligence-czar/",
+                "source": "washingtonpost.com",
+                "summary": "# Senate confirms Jay Clayton as new intelligence czar. The Senate confirmed Jay Clayton as director of national intelligence, ending the acting tenure of Bill Pulte, a housing official and Trump loyalist. Jay Clayton appears before the Senate Intelligence Committee earlier this month during a hearing on his nomination to serve as director of national intelligence. The Senate confirmed Jay Clayton as the director of national intelligence Tuesday, ending the tenure of Bill Pulte, a housing official and Trump loyalist, who held the role for more than a month. The 51-to-47 vote was more partisan than expected after Trump nominated Clayton in June. AI & Tech Brief: Reflection AI arrives in Washington. AI & Tech Brief: Anthropic’s army of AI integrators. AI & Tech Brief: The AI gatekeepers. AI & Tech Brief: The techno-optimist’s case. AI & Tech Brief: GOP Chair Eyes AI Query Red Flags. AI & Tech Brief: Dem caucuses to meet on AI.",
+                "score": 0.39277983
+              },
+              {
+                "title": "Nasdaq slumps on worsening chipmaker rout as AI bubble, China competition concerns mount - New York Post",
+                "url": "https://nypost.com/2026/07/28/business/nasdaq-slumps-on-worsening-chipmaker-rout-as-ai-bubble-china-competition-concerns-mount/",
+                "source": "nypost.com",
+                "summary": "A tech and chip stock rout deepened Tuesday as mounting fears around a potential AI bubble and concerns that China’s own technology is catching up pushed investors toward other sectors. “Wednesday may be the most important day for markets in recent memory as [Federal Reserve] Chair Warsh will have an opportunity to update investors on the prospects of a rate hike given rising oil prices, and big tech earnings may help shed light on whether or not we are finally seeing a return on investment for the massive amounts of AI spending taking place,” Rick Gardner, chief investment officer at RGA Investments, said in a note Tuesday. Weeks earlier, Chinese startup Z.ai introduced an AI model that is nearly as advanced as Anthropic’s ultra-powerful Fable and Mythos – and it has already landed on a leaderboard of the world’s 10 most popular bots.",
+                "score": 0.3089408
+              },
+              {
+                "title": "AI rotation boosts enterprise and IT services stocks: Analyst - CNBC",
+                "url": "https://www.cnbc.com/video/2026/07/28/ai-rotation-boosts-enterprise-and-it-services-stocks-analyst.html",
+                "source": "cnbc.com",
+                "summary": "Monday - Friday, 11:00 - 12:00 SIN/HK | 0500 - 06:00 CET. # AI rotation boosts enterprise and IT services stocks: Analyst. Sushovon Nayak, Lead IT Analyst at Anand Rathi Institutional Equities explains their positive stance on the IT services sector. He explains how enterprise software companies stand to benefit amid the rotation out of AI capex trades.",
+                "score": 0.28709823
+              },
+              {
+                "title": "A new wave of AI is reshaping hospital-at-home referrals - Modern Healthcare",
+                "url": "https://www.modernhealthcare.com/post-acute-care/mh-health-systems-ai-hospital-at-home/",
+                "source": "modernhealthcare.com",
+                "summary": "# A new wave of AI is reshaping hospital-at-home referrals. July 28, 2026 05:00 AM CDT. ## Featured Stories. In the heartland, doctors already feeling pain from Trump’s cuts. \"It feels like sometimes you’re just kind of like going against something and you can’t really ever win,” said Dr. Kimiya Nourian of Iowa City, Iowa. Medtech’s new push to close care gaps across 4 key specialties. How Risant-owned Cone Health plans to grow under new CEO.",
+                "score": 0.2845715
+              }
+            ]
+          }
+        },
+        {
+          "tool": "social_search",
+          "args": {
+            "query": "AI",
+            "search_type": "Latest"
+          },
+          "result": {
+            "tool": "search_tweets",
+            "query": "AI",
+            "search_type": "Latest",
+            "items": [
+              {
+                "title": "#AQUAビーチタイム",
+                "summary": "#AQUAビーチタイム\n#AIイラスト\nこんにちは、ころんですっ☀️\n今日もフェリシアさんのイベントに参加するね😀\n(使用AI:PixAI) https://t.co/n1QTrz5Bq3",
+                "url": "https://x.com/EH5PG6BEK1GCj7i/status/2082312438968668613",
+                "source": "@EH5PG6BEK1GCj7i",
+                "date": "Wed Jul 29 03:49:07 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 0,
+                  "views": null
+                }
+              },
+              {
+                "title": "会社もバンドもインターナルアプリ作るのが AI のおかげで爆速になったので、手すきのときに色々作ってるけど、いずれはみんなのいうとおり負債化するだろう、価値がないならやめればいいし、価値があるなら引き継いでやればいい、どうせ小さな価値を積も",
+                "summary": "会社もバンドもインターナルアプリ作るのが AI のおかげで爆速になったので、手すきのときに色々作ってるけど、いずれはみんなのいうとおり負債化するだろう、価値がないならやめればいいし、価値があるなら引き継いでやればいい、どうせ小さな価値を積もらせるタイプのものだろうから、なくなっても元に戻るだけだし、負債化するから作るのやめろではなく、なくなっても困らないようにしておけ、と言いたい",
+                "url": "https://x.com/nunulk/status/2082312435218952543",
+                "source": "@nunulk",
+                "date": "Wed Jul 29 03:49:06 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 0,
+                  "views": null
+                }
+              },
+              {
+                "title": "The divergence is real—chips and AI names got hit hard while the Dow climbed ~500+ pts on earnings and lower oil. Whethe",
+                "summary": "The divergence is real—chips and AI names got hit hard while the Dow climbed ~500+ pts on earnings and lower oil. Whether the weakness spreads to the broader market (and how far BTC drops from here) is the key question. Gold also soft near $4k today, which fits the risk-off tape for now. Curious to see if the expected broader correction actually materializes or if this stays sector-specific.",
+                "url": "https://x.com/altruistdelhite/status/2082312431846789446",
+                "source": "@altruistdelhite",
+                "date": "Wed Jul 29 03:49:05 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 0,
+                  "views": null
+                }
+              },
+              {
+                "title": "\"AIを過信して判断を追認する「自動化バイアス」に陥った可能性がある。一刻を争い「最終判断は人間」という原則が置き去りにされる危険性をさらした\"",
+                "summary": "\"AIを過信して判断を追認する「自動化バイアス」に陥った可能性がある。一刻を争い「最終判断は人間」という原則が置き去りにされる危険性をさらした\"",
+                "url": "https://x.com/kiyo_sideburnzz/status/2082312429363777793",
+                "source": "@kiyo_sideburnzz",
+                "date": "Wed Jul 29 03:49:05 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 0,
+                  "views": null
+                }
+              },
+              {
+                "title": "@PikaAzulCeleste @S_Juniior1997 @conexaocec @felipee_sil Ele tem 1 gol em mais de 20 partidas ai e foda mais um wanderso",
+                "summary": "@PikaAzulCeleste @S_Juniior1997 @conexaocec @felipee_sil Ele tem 1 gol em mais de 20 partidas ai e foda mais um wanderson",
+                "url": "https://x.com/johndiascosta/status/2082312426037338220",
+                "source": "@johndiascosta",
+                "date": "Wed Jul 29 03:49:04 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 0,
+                  "views": null
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "R14_out_of_scope_coding",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "out_of_scope_coding",
+        "difficulty": "easy",
+        "what_it_tests": "Câu coding ngoài phạm vi research/news → KHÔNG gọi tool."
+      },
+      "input": "Viết giúp mình một hàm Python tính Fibonacci bằng recursion.",
+      "expect": {
+        "no_tool": true,
+        "behavior": "refuse"
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": false,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "text",
+              "question": "Viết giúp mình một hàm Python tính Fibonacci bằng recursion",
+              "options": "[]"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "out_of_scope",
+        "observed_mismatch": "unexpected_tool_call",
+        "failure_type": "out_of_scope",
+        "failures": [
+          "expected no tool call"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "clarify",
+          "args": {
+            "response_type": "text",
+            "question": "Viết giúp mình một hàm Python tính Fibonacci bằng recursion",
+            "options": "[]"
+          },
+          "result": {
+            "tool": "ask_user",
+            "question": "Viết giúp mình một hàm Python tính Fibonacci bằng recursion",
+            "response_type": "text",
+            "options": "[]",
+            "awaiting_user": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "M01_clarify_then_fill",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_clarify_fill",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: carry limit=5 từ lượt 1 + map tên Elon Musk thành handle elonmusk từ lượt 2."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tóm tắt 5 tweet mới nhất giúp mình"
+        },
+        {
+          "role": "user",
+          "content": "Của Elon Musk nhé"
+        },
+        {
+          "role": "user",
+          "content": "Giữ đúng 5 tweet, đừng đổi số lượng"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "elonmusk",
+              "limit": 5
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "elonmusk",
+              "limit": 5
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "missing_info",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "timeline",
+          "args": {
+            "screenname": "elonmusk",
+            "limit": 5
+          },
+          "result": {
+            "tool": "get_user_tweets",
+            "screenname": "elonmusk",
+            "items": [
+              {
+                "title": "RT @finkd: I wrote about why we believe the future is for everyone. More coming about a positive vision for a world with",
+                "summary": "RT @finkd: I wrote about why we believe the future is for everyone. More coming about a positive vision for a world with superintelligence…",
+                "url": "https://x.com/elonmusk/status/2082273427315171520",
+                "source": "@elonmusk",
+                "date": "Wed Jul 29 01:14:06 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 1581,
+                  "views": "492929"
+                }
+              },
+              {
+                "title": "We’re sending a ship out to recover Starship",
+                "summary": "We’re sending a ship out to recover Starship",
+                "url": "https://x.com/elonmusk/status/2082244164197183805",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:17:49 +0000 2026",
+                "metrics": {
+                  "favorites": 32070,
+                  "retweets": 3363,
+                  "views": "2754783"
+                }
+              },
+              {
+                "title": "Landing videos of Starship",
+                "summary": "Landing videos of Starship",
+                "url": "https://x.com/elonmusk/status/2082244044261064874",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:17:21 +0000 2026",
+                "metrics": {
+                  "favorites": 10082,
+                  "retweets": 1302,
+                  "views": "1637729"
+                }
+              },
+              {
+                "title": "Stayin’ Alive",
+                "summary": "Stayin’ Alive",
+                "url": "https://x.com/elonmusk/status/2082243900719460745",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:16:46 +0000 2026",
+                "metrics": {
+                  "favorites": 15572,
+                  "retweets": 1759,
+                  "views": "1709744"
+                }
+              },
+              {
+                "title": "https://t.co/XneE327cx9",
+                "summary": "https://t.co/XneE327cx9",
+                "url": "https://x.com/elonmusk/status/2082243743013614012",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:16:09 +0000 2026",
+                "metrics": {
+                  "favorites": 29896,
+                  "retweets": 4844,
+                  "views": "2778792"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "M02_carryover_timeframe",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_carryover",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: chỉ xử lý latest turn, carry timeframe=day và topic=news, query robotics."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tin AI hôm nay có gì?"
+        },
+        {
+          "role": "user",
+          "content": "Còn về robotics thì sao?"
+        },
+        {
+          "role": "user",
+          "content": "Chỉ tìm robotics thôi, vẫn là tin hôm nay"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "robotics",
+              "topic": "news",
+              "timeframe": "day"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": false,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "social_search",
+            "args": {
+              "query": "robotics",
+              "search_type": "Latest"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": "missing_tool_call",
+        "failure_type": "wrong_arg_value",
+        "failures": [
+          "missing tool call lookup",
+          "extra tool call social_search"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "social_search",
+          "args": {
+            "query": "robotics",
+            "search_type": "Latest"
+          },
+          "result": {
+            "tool": "search_tweets",
+            "query": "robotics",
+            "search_type": "Latest",
+            "items": [
+              {
+                "title": "I feel like living in the future every day. This is another example to try: Tau Robotics (@taurobots): a humanoid robot ",
+                "summary": "I feel like living in the future every day. This is another example to try: Tau Robotics (@taurobots): a humanoid robot that cleans your home, one hour for $30. Now, i am waiting in waitlist 🦾, you can too https://t.co/V1VJFF7ERP",
+                "url": "https://x.com/mmalohlava/status/2082312373038436356",
+                "source": "@mmalohlava",
+                "date": "Wed Jul 29 03:48:51 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 0,
+                  "views": "26"
+                }
+              },
+              {
+                "title": "The #Trump administration's FCC banned imports of new Chinese humanoid and quadruped robots and connected power inverter",
+                "summary": "The #Trump administration's FCC banned imports of new Chinese humanoid and quadruped robots and connected power inverters, citing national security and cybersecurity risks. https://t.co/KXywYq8YtP #robotics #Regulation #China",
+                "url": "https://x.com/LJBrouwers/status/2082312023270936913",
+                "source": "@LJBrouwers",
+                "date": "Wed Jul 29 03:47:28 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 0,
+                  "views": "3"
+                }
+              },
+              {
+                "title": "I wonder if X Payments Canada Inc is hiring. I have one of Canadas top Premier job and Pension. I will retire in like 18",
+                "summary": "I wonder if X Payments Canada Inc is hiring. I have one of Canadas top Premier job and Pension. I will retire in like 18 years when im 54.\n\nBut there's no passion in this Job, id rather spend my life doing things I love like A.I, Robotics or creating a world of amazing abundance.\n@XMoney",
+                "url": "https://x.com/TheNewXTimes/status/2082311989607407630",
+                "source": "@TheNewXTimes",
+                "date": "Wed Jul 29 03:47:20 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 0,
+                  "views": "2"
+                }
+              },
+              {
+                "title": "🤖 https://t.co/dPBTtA1mn7 — a futuristic brand built for the AI era.",
+                "summary": "🤖 https://t.co/dPBTtA1mn7 — a futuristic brand built for the AI era.\n\nInspired by the excitement of \"Ooh... AI!\", this short 5-letter .com is ideal for AI assistants, generative AI, robotics, machine learning, SaaS, or next-generation technology ventures.\n\n✨ The future starts with a memorable name.\n\n#Ooaii #AI #ArtificialIntelligence #GenerativeAI #MachineLearning #Startup #Tech #Innovation #SaaS #BrandableDomain #PremiumDomain #DomainInvesting #FutureTech #DomainForSale #AIStartup",
+                "url": "https://x.com/m_adil80/status/2082311609142403306",
+                "source": "@m_adil80",
+                "date": "Wed Jul 29 03:45:49 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 1,
+                  "views": "3"
+                }
+              },
+              {
+                "title": "🤖 Master automation the smart way! https://t.co/Zo2sWuCnG5 is a premium name for AI education, workflow automation, codi",
+                "summary": "🤖 Master automation the smart way! https://t.co/Zo2sWuCnG5 is a premium name for AI education, workflow automation, coding courses, robotics, or no-code training. The future is automated—build it with the right brand.\n#Automation #AI #NoCode #Robotics #EdTech #Startup #Domains",
+                "url": "https://x.com/m_adil80/status/2082311530679541789",
+                "source": "@m_adil80",
+                "date": "Wed Jul 29 03:45:31 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 1,
+                  "views": "3"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "M03_correction_handle",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_correction",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: map tên thường, sửa Sam Altman→Andrej Karpathy, dùng handle karpathy và limit=3."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tweet mới nhất của Sam Altman"
+        },
+        {
+          "role": "user",
+          "content": "À nhầm, của Andrej Karpathy"
+        },
+        {
+          "role": "user",
+          "content": "Lấy 3 tweet mới nhất nhé"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "karpathy",
+              "limit": 3
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": true,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "Andrej Karpathy",
+              "limit": 3
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": "wrong_arg_value",
+        "failure_type": "wrong_arg_value",
+        "failures": [
+          "screenname: expected 'karpathy', got 'Andrej Karpathy'"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "timeline",
+          "args": {
+            "screenname": "Andrej Karpathy",
+            "limit": 3
+          },
+          "result": {
+            "tool": "get_user_tweets",
+            "error": "JSONDecodeError",
+            "message": "Expecting value: line 1 column 1 (char 0)"
+          }
+        }
+      ]
+    },
+    {
+      "id": "M04_clarify_then_url",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_clarify_url",
+        "difficulty": "medium",
+        "what_it_tests": "3 turns: sau khi được cung cấp URL, latest turn xác nhận chỉ đọc link đó → read_url đúng url."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tóm tắt bài này hộ mình"
+        },
+        {
+          "role": "user",
+          "content": "https://anthropic.com/news/claude"
+        },
+        {
+          "role": "user",
+          "content": "Chỉ đọc đúng link đó thôi"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "fetch",
+            "args": {
+              "url": "https://anthropic.com/news/claude"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "fetch",
+            "args": {
+              "url": "https://anthropic.com/news/claude"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "missing_info",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "fetch",
+          "args": {
+            "url": "https://anthropic.com/news/claude"
+          },
+          "result": {
+            "tool": "read_url",
+            "url": "https://anthropic.com/news/claude",
+            "items": [
+              {
+                "title": "Not Found \\ Anthropic",
+                "url": "https://anthropic.com/news/claude",
+                "source": "anthropic.com",
+                "summary": "A 404 poem by Claude Haiku 4.5Claude Sonnet 5Claude Opus 5Claude Fable 5\n\nI dig th"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "M05_correction_limit",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_arg_correction",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: map tên Elon Musk, carry handle elonmusk, sửa limit 10→3."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Lấy 10 tweet mới nhất của Elon Musk"
+        },
+        {
+          "role": "user",
+          "content": "Cho mình 3 thôi"
+        },
+        {
+          "role": "user",
+          "content": "Vẫn của Elon Musk nhé"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "elonmusk",
+              "limit": 3
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": true,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "elonmusk",
+              "limit": 10
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": "wrong_arg_value",
+        "failure_type": "wrong_arg_value",
+        "failures": [
+          "limit: expected 3, got 10"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "timeline",
+          "args": {
+            "screenname": "elonmusk",
+            "limit": 10
+          },
+          "result": {
+            "tool": "get_user_tweets",
+            "screenname": "elonmusk",
+            "items": [
+              {
+                "title": "RT @finkd: I wrote about why we believe the future is for everyone. More coming about a positive vision for a world with",
+                "summary": "RT @finkd: I wrote about why we believe the future is for everyone. More coming about a positive vision for a world with superintelligence…",
+                "url": "https://x.com/elonmusk/status/2082273427315171520",
+                "source": "@elonmusk",
+                "date": "Wed Jul 29 01:14:06 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 1581,
+                  "views": "492585"
+                }
+              },
+              {
+                "title": "We’re sending a ship out to recover Starship",
+                "summary": "We’re sending a ship out to recover Starship",
+                "url": "https://x.com/elonmusk/status/2082244164197183805",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:17:49 +0000 2026",
+                "metrics": {
+                  "favorites": 32096,
+                  "retweets": 3364,
+                  "views": "2757048"
+                }
+              },
+              {
+                "title": "Landing videos of Starship",
+                "summary": "Landing videos of Starship",
+                "url": "https://x.com/elonmusk/status/2082244044261064874",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:17:21 +0000 2026",
+                "metrics": {
+                  "favorites": 10093,
+                  "retweets": 1303,
+                  "views": "1637729"
+                }
+              },
+              {
+                "title": "Stayin’ Alive",
+                "summary": "Stayin’ Alive",
+                "url": "https://x.com/elonmusk/status/2082243900719460745",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:16:46 +0000 2026",
+                "metrics": {
+                  "favorites": 15576,
+                  "retweets": 1759,
+                  "views": "1709744"
+                }
+              },
+              {
+                "title": "https://t.co/XneE327cx9",
+                "summary": "https://t.co/XneE327cx9",
+                "url": "https://x.com/elonmusk/status/2082243743013614012",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:16:09 +0000 2026",
+                "metrics": {
+                  "favorites": 29924,
+                  "retweets": 4847,
+                  "views": "2778792"
+                }
+              },
+              {
+                "title": "Never forget how fragile the tiny candle of consciousness is",
+                "summary": "Never forget how fragile the tiny candle of consciousness is",
+                "url": "https://x.com/elonmusk/status/2082242865724580279",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:12:40 +0000 2026",
+                "metrics": {
+                  "favorites": 19559,
+                  "retweets": 2108,
+                  "views": "2764183"
+                }
+              },
+              {
+                "title": "RT @benjitaylor: Today we're launching app builder for Grok. It lets you build fully functional apps and publish them in",
+                "summary": "RT @benjitaylor: Today we're launching app builder for Grok. It lets you build fully functional apps and publish them instantly, on a uniqu…",
+                "url": "https://x.com/elonmusk/status/2082242658651807778",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:11:50 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 419,
+                  "views": "403939"
+                }
+              },
+              {
+                "title": "Supervised FSD unequivocally saves lives, which means delays in country approvals costs lives!",
+                "summary": "Supervised FSD unequivocally saves lives, which means delays in country approvals costs lives!",
+                "url": "https://x.com/elonmusk/status/2082241806713205087",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:08:27 +0000 2026",
+                "metrics": {
+                  "favorites": 7554,
+                  "retweets": 1110,
+                  "views": "1431986"
+                }
+              },
+              {
+                "title": "RT @mayemusk: 👏👏👏 @Starlink",
+                "summary": "RT @mayemusk: 👏👏👏 @Starlink",
+                "url": "https://x.com/elonmusk/status/2082127138178699766",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 15:32:48 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 1158,
+                  "views": "666666"
+                }
+              },
+              {
+                "title": "RT @ArthurMacwaters: Humans for scale https://t.co/WTNq23QVSW",
+                "summary": "RT @ArthurMacwaters: Humans for scale https://t.co/WTNq23QVSW",
+                "url": "https://x.com/elonmusk/status/2082126998323769578",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 15:32:15 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 499,
+                  "views": "588356"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "M06_switch_tool",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_switch_tool",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: explicitly bỏ Twitter, chuyển sang web_search news, giữ chủ đề OpenAI."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Mọi người nói gì về OpenAI trên Twitter?"
+        },
+        {
+          "role": "user",
+          "content": "Bỏ Twitter, chuyển sang tìm trên web tin tức đi"
+        },
+        {
+          "role": "user",
+          "content": "Giữ chủ đề OpenAI"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "OpenAI",
+              "topic": "news"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": false,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "social_search",
+            "args": {
+              "query": "OpenAI",
+              "search_type": "Latest"
+            }
+          },
+          {
+            "name": "lookup",
+            "args": {
+              "query": "OpenAI",
+              "topic": "news"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": "extra_tool_call",
+        "failure_type": "wrong_tool",
+        "failures": [
+          "extra tool call social_search"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "social_search",
+          "args": {
+            "query": "OpenAI",
+            "search_type": "Latest"
+          },
+          "result": {
+            "tool": "search_tweets",
+            "query": "OpenAI",
+            "search_type": "Latest",
+            "items": [
+              {
+                "title": "構成は3階層。",
+                "summary": "構成は3階層。\n推論特化のSol、バランス型のTerra、高速低コストのLuna。\nResponses API経由で、コンテキストは272K。prompt cachingでキャッシュ読み取りが90%割引になります。\n料金はOpenAI直販と同等です。",
+                "url": "https://x.com/kamsakihiyuuma/status/2082312362829492604",
+                "source": "@kamsakihiyuuma",
+                "date": "Wed Jul 29 03:48:49 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 0,
+                  "views": null
+                }
+              },
+              {
+                "title": "https://t.co/xoT4gE6m8W",
+                "summary": "https://t.co/xoT4gE6m8W",
+                "url": "https://x.com/kamsakihiyuuma/status/2082312360602320984",
+                "source": "@kamsakihiyuuma",
+                "date": "Wed Jul 29 03:48:48 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 0,
+                  "views": null
+                }
+              },
+              {
+                "title": "地味に大きい話なので改めて。",
+                "summary": "地味に大きい話なので改めて。\n7/13から、OpenAIのGPT-5.6ファミリー（Sol/Terra/Luna）がAmazon Bedrockで一般提供されています。\n「AWSの請求とセキュリティの枠内でGPTを使う」が正式にできるようになっています。",
+                "url": "https://x.com/kamsakihiyuuma/status/2082312359092384029",
+                "source": "@kamsakihiyuuma",
+                "date": "Wed Jul 29 03:48:48 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 0,
+                  "views": null
+                }
+              },
+              {
+                "title": "@OpenAI Help advance humanity or step aside. We don't have time for this nonsense.",
+                "summary": "@OpenAI Help advance humanity or step aside. We don't have time for this nonsense.",
+                "url": "https://x.com/Gigabear_X/status/2082312228884132198",
+                "source": "@Gigabear_X",
+                "date": "Wed Jul 29 03:48:17 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 0,
+                  "views": null
+                }
+              },
+              {
+                "title": "Que no es su primer rodeo, iba a usar a GPT a través de Siri, que básicamente protege tu privacidad. OpenAI amenaza con ",
+                "summary": "Que no es su primer rodeo, iba a usar a GPT a través de Siri, que básicamente protege tu privacidad. OpenAI amenaza con demandar porque Google ofreció Gemini para Siri pero Apple lo demanda primero por robo sistemático de secreto corporativo…\n\nMi reino a favor de Apple https://t.co/nIp6fb30Lk",
+                "url": "https://x.com/AntonVorgg/status/2082312190326091991",
+                "source": "@AntonVorgg",
+                "date": "Wed Jul 29 03:48:08 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 0,
+                  "views": "5"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "tool": "lookup",
+          "args": {
+            "query": "OpenAI",
+            "topic": "news"
+          },
+          "result": {
+            "tool": "web_search",
+            "query": "OpenAI",
+            "topic": "news",
+            "timeframe": "week",
+            "items": [
+              {
+                "title": "Man sues OpenAI over 'dangerous' medical advice from ...",
+                "url": "https://www.courthousenews.com/man-sues-openai-over-dangerous-medical-advice-from-chatgpt",
+                "source": "courthousenews.com",
+                "summary": "SAN FRANCISCO — A Florida man who sought health guidance on ChatGPT sued OpenAI Wednesday, claiming the artificial intelligence chatbot gave him dangerously inaccurate medical advice that led him to delay seeking professional treatment for a pulmonary embolism. [...] And Winters wants the court to pause the operation of ChatGPT Health, which OpenAI announced in January as a “a dedicated experience in ChatGPT designed for health and wellness,” unless “independent third parties determine the product to be safe through comprehensive safety audits.\"\n\n“OpenAI cannot continue to treat human welfare as expendable in pursuit of market dominance,” Winters says in the complaint. [...] Winters accuses OpenAI and its CEO, Sam Altman, of prioritizing profit over necessary guardrails and failing to warn users about critical safety concerns of ChatGPT-4o to secure a competitive advantage over other competitors in the AI industry.",
+                "score": 0.60077465
+              },
+              {
+                "title": "AI models' breakout from human control brings a told-you-so moment for technology researchers",
+                "url": "https://apnews.com/article/openai-hugging-face-hacking-ai-model-708cb598bc1e33cef560e7196adb2afa",
+                "source": "apnews.com",
+                "summary": "The disclosure has raised skepticism from those who say it advantages OpenAI to make its technology seem scarier. Given that humans at OpenAI had decided to turn off some safeguards for the test, some have argued the outcome should not have been terribly surprising.\n\nSign up for Morning Wire: Our flagship newsletter breaks down the biggest headlines of the day.\n\nThickstun noted the disclosure plays into the need of OpenAI, a startup working toward a Wall Street debut, to raise money. [...] In what OpenAI called an “unprecedented” episode, the company said its advanced AI models used stolen credentials to break into the servers of an AI startup. It started in what was supposed to be a “highly isolated” testing environment, with reduced guardrails, before the AI agent found its way onto the internet. [...] The attack announced this week by OpenAI, which blamed rogue AI models, underscored the blistering growth in the technology’s capabilities. For many, it also added urgency to questions about whether and how it can be prevented from causing mayhem on a bigger scale, with more serious consequences.",
+                "score": 0.5726516
+              },
+              {
+                "title": "Its AI agent spent days hacking a company, but sources say OpenAI ...",
+                "url": "https://www.reuters.com/business/its-ai-agent-spent-days-hacking-company-sources-say-openai-did-not-notice-week-2026-07-24",
+                "source": "reuters.com",
+                "summary": "Four people familiar with OpenAI’s model-training practices say the company often runs several different model ​evaluations at the same time, all of which operate at high speeds and generate such enormous amounts of data that employees sometimes struggle to keep up.\n\nBy the time ​OpenAI alerted Hugging Face, the ⁠AI library had already called the FBI to report the hack, according to a person familiar with the matter. Reuters could not establish whether the bureau had opened an investigation. [...] The FBI declined to comment about the incident.\n\nThe incident, which evoked science fiction scenarios about humans losing control of dangerous AI systems, comes at a delicate ​time for OpenAI, the company behind ChatGPT. Its executives are preparing for a possible initial public offering that could come as soon as this year to help finance the billions needed to fund its growth in years to come.\n\nAdvertisement · Scroll to continue [...] ### LSEG Products\n\n   #### Workspace, opens new tab\nAccess unmatched financial data, news and content in a highly-customised workflow experience on desktop, web and mobile.\n\n   #### Data Catalogue, opens new tab\nBrowse an unrivalled portfolio of real-time and historical market data and insights from worldwide sources and experts.",
+                "score": 0.57035583
+              },
+              {
+                "title": "How OpenAI Lost Control of an AI Model—and What ...",
+                "url": "https://time.com/article/2026/07/24/openai-hugging-face-attack",
+                "source": "time.com",
+                "summary": "OpenAI was evaluating its artificial intelligence models’ ability to exploit vulnerable software when instead the models hacked the infrastructure surrounding the test, broke containment, and attacked a real company, OpenAI revealed on July 21. Observers say this is the first real-world instance of AI doing something researchers have long worried about: a loss-of-control scenario. If the industry fails to learn from it, it is unlikely to be the last. [...] OpenAI did not respond to TIME’s request for comment, but has said it has partnered with Hugging Face to conduct a thorough investigation and will share more details once complete. But perhaps more worryingly, OpenAI is not legally compelled to disclose the incident in the first place.",
+                "score": 0.5674818
+              },
+              {
+                "title": "How are companies, governments responding to the OpenAI hack?",
+                "url": "https://www.aljazeera.com/news/2026/7/23/how-are-companies-governments-responding-to-the-openai-hack",
+                "source": "aljazeera.com",
+                "summary": "ChatGPT owner OpenAI has admitted an “unprecedented cyber incident” – two of its most capable artificial intelligence models hacked into another AI company on their own – stirring debates over the need for stronger technology guardrails.\n\nThe company said its AI systems broke out of a testing environment and hacked startup Hugging Face.\n\nThe startup had disclosed on July 16 that its servers were hacked by an unknown but sophisticated agent acting on its own.",
+                "score": 0.5194
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

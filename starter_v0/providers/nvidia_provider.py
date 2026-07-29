@@ -6,7 +6,7 @@ from providers.openai_provider import OpenAIProvider
 
 
 class NvidiaProvider(OpenAIProvider):
-    """NVIDIA NIM, exposed through its OpenAI-compatible API."""
+    """NVIDIA NIM provider via its OpenAI-compatible API."""
 
     def __init__(self) -> None:
         super().__init__(
