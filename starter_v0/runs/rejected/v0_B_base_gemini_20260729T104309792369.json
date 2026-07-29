@@ -1,0 +1,1580 @@
+{
+  "run_id": "v0_B_base_gemini_20260729T104309792369",
+  "version": "v0",
+  "artifact_version": "v0+pf4bb11247362+td4c1aeaa79bf",
+  "prompt_hash": "f4bb11247362de15b86c02642e131738bccbbbd6da571cca3548e68147f6b25d",
+  "tools_hash": "d4c1aeaa79bf5af520bb09abb5a478b9ba6a56a6d2e778066471e5323792b3a1",
+  "phase": "B",
+  "suite": "base",
+  "provider": "gemini",
+  "model": "gemini-3.5-flash",
+  "system_prompt": "/Users/phuongngo/Code/VinUni/Labs/DAY04_2A202601569_NGOTHINGOCPHUONG/starter_v0/artifacts/system_prompt.md",
+  "tools": "/Users/phuongngo/Code/VinUni/Labs/DAY04_2A202601569_NGOTHINGOCPHUONG/starter_v0/artifacts/tools.yaml",
+  "eval_cases": "data/eval_base.json",
+  "dataset_id": "day04_v2_research_base",
+  "dataset_role": "base",
+  "description": "Core eval cho research agent: routing đúng tool + đúng args, hỏi lại khi thiếu (ask_user), xác nhận trước khi gửi, và xử lý câu ngoài phạm vi / không cần tool. Chấm trên tool_calls + args (subset). KHÔNG sửa file này — chỉ thêm case vào eval_group.json.",
+  "generated_at": "2026-07-29T10:43:09",
+  "summary": {
+    "total_cases": 20,
+    "measured_cases": 10,
+    "provider_error_cases": 10,
+    "passed_cases": 6,
+    "case_accuracy": 0.6,
+    "tool_routing_accuracy": 0.7,
+    "argument_accuracy": 0.6,
+    "multiturn_accuracy": null,
+    "failure_counts": {
+      "wrong_tool": 1,
+      "out_of_scope": 1,
+      "unnecessary_tool": 1,
+      "missing_info": 1
+    },
+    "observed_mismatch_counts": {
+      "wrong_arg_value": 1,
+      "unexpected_tool_call": 2,
+      "missing_tool_call": 1
+    }
+  },
+  "results": [
+    {
+      "id": "R01_user_tweets_routing",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "routing_user_tweets_name_to_handle",
+        "difficulty": "medium",
+        "what_it_tests": "Tin CỦA một người nổi tiếng → map tên Sam Altman thành handle sama rồi gọi get_user_tweets."
+      },
+      "input": "Tweet mới nhất của Sam Altman là gì?",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "sama"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "sama",
+              "limit": 5
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "timeline",
+          "args": {
+            "screenname": "sama",
+            "limit": 5
+          },
+          "result": {
+            "tool": "get_user_tweets",
+            "screenname": "sama",
+            "items": [
+              {
+                "title": "wrong",
+                "summary": "wrong",
+                "url": "https://x.com/sama/status/2081832600591892712",
+                "source": "@sama",
+                "date": "Mon Jul 27 20:02:25 +0000 2026",
+                "metrics": {
+                  "favorites": 11152,
+                  "retweets": 280,
+                  "views": "2132094"
+                }
+              },
+              {
+                "title": "agreed feels big, i want a new kind of computer",
+                "summary": "agreed feels big, i want a new kind of computer",
+                "url": "https://x.com/sama/status/2081513071135346814",
+                "source": "@sama",
+                "date": "Sun Jul 26 22:52:43 +0000 2026",
+                "metrics": {
+                  "favorites": 8126,
+                  "retweets": 284,
+                  "views": "2392504"
+                }
+              },
+              {
+                "title": "chatgpt work is remarkable, and \"work\" undersells it.",
+                "summary": "chatgpt work is remarkable, and \"work\" undersells it.\n\nfrom my phone i sent:\n\n\"use all my chat history to figure out ideas for a long weekend trip with 8 friends, plan the best three options, make a full-stack site where the 9 of us can coordinate on what we would want to do in each place and decide where to go, and then after we get to group agreement make reservations. draft an email in my gmail i can send out to my friends when the site is ready.\"\n\nit...just worked.",
+                "url": "https://x.com/sama/status/2081396796174282900",
+                "source": "@sama",
+                "date": "Sun Jul 26 15:10:41 +0000 2026",
+                "metrics": {
+                  "favorites": 17407,
+                  "retweets": 573,
+                  "views": "3570926"
+                }
+              },
+              {
+                "title": "RT @gdb: stories like this should be told more",
+                "summary": "RT @gdb: stories like this should be told more",
+                "url": "https://x.com/sama/status/2081030523229728800",
+                "source": "@sama",
+                "date": "Sat Jul 25 14:55:15 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 170,
+                  "views": "44761"
+                }
+              },
+              {
+                "title": "RT @pashmerepat: A billion users can now create and publish websites from their phones with ChatGPT Work. ",
+                "summary": "RT @pashmerepat: A billion users can now create and publish websites from their phones with ChatGPT Work. \n\nBut most people don’t really gr…",
+                "url": "https://x.com/sama/status/2080713767122591863",
+                "source": "@sama",
+                "date": "Fri Jul 24 17:56:34 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 118,
+                  "views": "47739"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "R02_search_tweets_routing",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "routing_search_tweets",
+        "difficulty": "easy",
+        "what_it_tests": "Tweet theo CHỦ ĐỀ → search_tweets, không phải get_user_tweets."
+      },
+      "input": "Mọi người đang bàn gì về GPT-5 trên Twitter?",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "social_search",
+            "args": {}
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "social_search",
+            "args": {
+              "query": "GPT-5",
+              "search_type": "Top"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "social_search",
+          "args": {
+            "query": "GPT-5",
+            "search_type": "Top"
+          },
+          "result": {
+            "tool": "search_tweets",
+            "query": "GPT-5",
+            "search_type": "Top",
+            "items": [
+              {
+                "title": "Full Opus 5 vs Kimi K3 vs GPT-5.6 vs Claude Fable 5 comparison.",
+                "summary": "Full Opus 5 vs Kimi K3 vs GPT-5.6 vs Claude Fable 5 comparison.\n\nOpus 5 just delivered a seriously impressive result in my 3D destruction physics benchmark.\n\nI gave four frontier models the same challenge: build three self-contained HTML scenes with realistic physics.\n\nThe tasks:\n\n🌪️ A tornado ripping through a field\n🏗️ A wrecking ball demolishing an apartment block\n🌉 An overloaded truck collapsing a truss bridge\n\nToken usage / cost:\n• Opus 5: 55.9K tokens — $1.40\n• Fable 5: 55.1K tokens — $2.82\n• Kimi K3: 35.7K tokens — $0.55\n• GPT-5.6: 20.1K tokens — $0.31\n\nOpus was the only model that convincingly completed all three scenarios.\n\nThe tornado actually lifted debris into the funnel, the wrecking ball fractured the building where it made contact, and the bridge failed in a way that sent the truck into the river.\n\nThe others struggled in different ways. Fable’s tornado had little to pick up, its building collapsed before impact, and the bridge disintegrated unrealistically. GPT-5.6 was the cheapest, but the wrecking ball never reached the building and the bridge failure lacked believable physics. Kimi K3 landed somewhere in between.\n\nFor complex browser-based physics simulations, Opus 5 is setting a very high bar.",
+                "url": "https://x.com/Oluwaphilemon1/status/2082293013791797308",
+                "source": "@Oluwaphilemon1",
+                "date": "Wed Jul 29 02:31:56 +0000 2026",
+                "metrics": {
+                  "favorites": 2,
+                  "retweets": 1,
+                  "views": "380"
+                }
+              },
+              {
+                "title": "Opus 5 vs Kimi K3 vs GPT-5.6 vs Claude Fable 5; This is actually wild.",
+                "summary": "Opus 5 vs Kimi K3 vs GPT-5.6 vs Claude Fable 5; This is actually wild.\n\nSomeone ran Claude Fable 5 and Kimi K3 side by side on the same prompt, with the same task, in a single shot.\n\nBoth completed it successfully on the first attempt.\n\nThe surprise was the cost.\n\nFable 5: $37.94\nKimi K3: $16.45\n\nThat’s a much smaller gap in capability than many people expected, especially for long-running reasoning tasks.\n\nIf these results hold up across more benchmarks, AI development workflows could get a lot cheaper.\n\nThe setup only works for a limited time, so if you’re planning to try it, save the guide before it’s gone.",
+                "url": "https://x.com/Oluwaphilemon1/status/2082288402750136827",
+                "source": "@Oluwaphilemon1",
+                "date": "Wed Jul 29 02:13:36 +0000 2026",
+                "metrics": {
+                  "favorites": 5,
+                  "retweets": 1,
+                  "views": "399"
+                }
+              },
+              {
+                "title": "Kimi K3 made this beautiful painterly world in a single HTML file.",
+                "summary": "Kimi K3 made this beautiful painterly world in a single HTML file.\n\nOne prompt. Everything generated procedurally, with no external assets.\n\nIt even created a realistic grass and wind simulation, making millions of blades react naturally in real time.\n\nAll built with Three.js.\n\nOne-shot creative coding across Kimi K3, Claude Opus 5, GPT-5.6 Sol and Gemini - and Kimi continues to impress.",
+                "url": "https://x.com/aimi_sh/status/2081590615666475449",
+                "source": "@aimi_sh",
+                "date": "Mon Jul 27 04:00:51 +0000 2026",
+                "metrics": {
+                  "favorites": 97,
+                  "retweets": 7,
+                  "views": "11829"
+                }
+              },
+              {
+                "title": "EVERYONE IS TALKING ABOUT CLAUDE OPUS 5 BUILDING AAA GAMES. ALMOST NOBODY KNOWS WHY",
+                "summary": "EVERYONE IS TALKING ABOUT CLAUDE OPUS 5 BUILDING AAA GAMES. ALMOST NOBODY KNOWS WHY\n\nSomeone asked Claude Opus 5 to build a game inspired by For Honor x Rainbow Six.\n\nMinutes later, it was already generating a playable 3D prototype\n\nAfter comparing it with GPT-5.6 and other models, the creator called Opus 5 the best AI model for frontend and 3D development he's ever used.\n\nBut the real story isn't the game.\n\nIt's how Anthropic changed prompting.\n\nMost people still write prompts as if they're talking to GPT-4-era models: long instructions, endless checklists, \"verify your answer,\" \"think step by step.\"\n\nOpus 5 was built differently.\n\nAnthropic's own guide says to stop micromanaging the model. Give it the goal, explain the context, remove unnecessary instructions, and let it reason on its own.\n\nThat's why you're suddenly seeing people build games, apps, and production-ready UIs instead of just getting better chat responses.\n\nThe biggest Opus 5 upgrade isn't higher benchmark scores.\n\nIt's that ai is starting to think like an engineer, not just respond like a chatbot",
+                "url": "https://x.com/shiqway92/status/2082091077234753839",
+                "source": "@shiqway92",
+                "date": "Tue Jul 28 13:09:30 +0000 2026",
+                "metrics": {
+                  "favorites": 32,
+                  "retweets": 5,
+                  "views": "2176"
+                }
+              },
+              {
+                "title": "The most important person in AI just resurfaced. And NVIDIA wrote him a $5 billion check.",
+                "summary": "The most important person in AI just resurfaced. And NVIDIA wrote him a $5 billion check.\n\nIlya Sutskever built the research behind GPT. Co-founded OpenAI. Was Chief Scientist for nearly a decade. If you use any AI model today, his fingerprints are on the foundations.\n\nThen he tried to fire Sam Altman, the whole world watched, and Ilya vanished. Two years of silence.\n\nDuring that silence he started Safe Superintelligence. No app. No API. No customers. One mission: build safe superintelligence. Nothing else. Raised $3 billion while barely saying a word publicly.\n\nToday NVIDIA put $5 billion into SSI and gave them access to their next-gen Vera Rubin chips. 10x more compute overnight.\n\nJensen doesn't write checks like that on faith. He asked to see the research first. SSI opened the door. Jensen looked. And bet five billion.\n\nNobody outside knows exactly what Ilya is building. But the few times he's spoken publicly, he's been remarkably specific about what's wrong with current AI and what he thinks is missing.\n\nHis argument: every model today learns during training and then freezes. Like a student who studies for years, takes the exam, and never learns anything new again. Brilliant on the test. Strangely fragile in real life.\n\nIlya doesn't want smarter models. He wants models that keep learning from experience after you deploy them.\n\nHis description of the goal: \"I produce a superintelligent 15-year-old. They don't know very much at all. Very eager. You go and be a programmer, you go and be a doctor, go and learn.\"\n\nNot an AI that already knows everything. An AI that can learn anything.\n\nHe also talked about something that I haven't stopped thinking about. He said humans have an internal compass — emotions, intuition, gut feel — that tells you something is going wrong long before you reach the end. You don't finish a 10,000-step project and then realize it was broken. You feel it midway.\n\nHe said AI needs the same mechanism. Some kind of internal judgment that runs while the model is working. And then said there's a \"missing machine learning principle\" he can't discuss publicly.\n\nEveryone else is racing to make models bigger. More data. More tokens. More compute.\n\nIlya is trying to solve something different. How to make them actually learn.\n\nThe man who sees more AI research than anyone alive just bet $5 billion that Ilya found it.",
+                "url": "https://x.com/VaibhavSisinty/status/2081856150983868801",
+                "source": "@VaibhavSisinty",
+                "date": "Mon Jul 27 21:36:00 +0000 2026",
+                "metrics": {
+                  "favorites": 261,
+                  "retweets": 35,
+                  "views": "22654"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "R03_web_news_routing",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "routing_web_news",
+        "difficulty": "medium",
+        "what_it_tests": "Tin thời sự trên web → web_search topic=news, timeframe=day (hôm nay)."
+      },
+      "input": "Tin tức AI hôm nay có gì nổi bật?",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "AI",
+              "topic": "news",
+              "timeframe": "day"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": true,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "max_results": 5,
+              "topic": "news",
+              "query": "AI news",
+              "timeframe": "day"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": "wrong_arg_value",
+        "failure_type": "wrong_tool",
+        "failures": [
+          "query: expected 'AI', got 'AI news'"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "lookup",
+          "args": {
+            "max_results": 5,
+            "topic": "news",
+            "query": "AI news",
+            "timeframe": "day"
+          },
+          "result": {
+            "tool": "web_search",
+            "query": "AI news",
+            "topic": "news",
+            "timeframe": "day",
+            "items": [
+              {
+                "title": "Open vs. closed: The next front in the AI race",
+                "url": "https://www.gzeromedia.com/news/analysis/open-vs-closed-the-next-front-in-the-ai-race",
+                "source": "gzeromedia.com",
+                "summary": "That strategy is making US officials uneasy. The White House is reportedly considering restricting Chinese open-weight models by adding Chinese AI labs to its “Entity List,” effectively cutting off US access without a license. Last week, the Trump administration also accused Moonshot AI of “distilling” knowledge from American AI companies — a process in which developers use millions of interactions with existing models to train their own systems. Moonshot denied the allegations, and several AI [...] See Full Bio\n\n Make us preferred on Google\n\nOn Monday, Beijing-based Moonshot AI released Kimi K3 for public download, an “open-weight” model that made headlines last week for reportedly matching – and in some cases outperforming – the most advanced systems from US rivals at a fraction of the cost. [...] Kimi K3 is released by Moonshot AI at the World Artificial Intelligence Conference (WAIC) 2026 in Shanghai, China \n\nKimi K3, a new-generation AI model with 2.8 trillion parameters, is released by Moonshot AI at the World Artificial Intelligence Conference (WAIC) 2026 in Shanghai, China, July 20, 2026. It is currently the world's largest open-source model.\n\nOriental Image via Reuters Connect\n\nNatalie Johnson\n\nBy Natalie JohnsonJuly 28, 2026\n\nNatalie Johnson",
+                "score": 0.61779
+              },
+              {
+                "title": "Employees at the world’s biggest AI companies are calling for a slowdown in AI development | CNN Business",
+                "url": "https://www.cnn.com/2026/07/28/tech/ai-development-tech-employees-open-letter",
+                "source": "cnn.com",
+                "summary": "The letter comes on the heels of major advancements and burgeoning threats from rapidly developing AI systems. OpenAI disclosed last week that two of its test models escaped a lab environment, bypassed its systems to gain access to the open internet and hacked a different company’s internal system. [...] “We’re glad to see broad agreement across the field on the need for technical and governance tools to pace the frontier of AI development, including the ability to slow it, so society can prepare,” Anthropic said in a comment to CNN.\n\nGoogle DeepMind CEO Demis Hassabis also recently called for a new international standards body to help set protocols for new AI models, an idea endorsed by Altman, SpaceX’s Elon Musk, Microsoft CEO Satya Nadella and other major industry figures. [...] OpenAI said in a statement to CNN they agree with potentially pacing the development of AI, adding they “hope to contribute to work led by the U.S. government, alongside other labs” on the topic.\n\nOpenAI CEO Sam Altman suggested it may be time to slow down AI development in a podcast interview Tuesday. The OpenAI models that broke out of their test environment are fueling “long term questions” about how AI companies should address this new rate of progress.",
+                "score": 0.55623144
+              },
+              {
+                "title": "Tech Stocks Tumble on Worries About A.I. Spending and ...",
+                "url": "https://www.nytimes.com/2026/07/28/business/stocks-ai-chips.html",
+                "source": "nytimes.com",
+                "summary": "Last week, earnings reports by Tesla and Alphabet, Google’s parent company, shook the markets as they revealed the staggering scale of spending required to keep up in the global A.I. race. On Monday, the Chinese start-up Moonshot publicly released the details of its latest A.I. model, adding to investor concerns about an A.I. arms race between China and the United States. [...] The latest A.I.-related market tremor began on Monday, when the shares of China’s leading memory chipmaker, ChangXin Memory Technologies, began trading after a blockbuster initial public offering. The company’s stock soared nearly 500 percent on its market debut, quickly making it the most valuable company on the Shanghai exchange. It slipped 4 percent on Tuesday [...] The latest market turmoil is an unwelcome turn for a region where the A.I. boom has served as a rare economic bright spot. In markets like South Korea and Taiwan, rising chip exports and soaring A.I. valuations have masked broader weakness across their domestic economies, which remain heavily dependent on energy imports from the Middle East.",
+                "score": 0.48528314
+              },
+              {
+                "title": "What Americans think about the global AI race",
+                "url": "https://ssrs.com/news/what-americans-think-about-the-global-ai-race",
+                "source": "ssrs.com",
+                "summary": "We surveyed U.S. adults from June 22 to 28, 2026. Everyone who took these surveys is a member of the Center’s American Trends Panel. The surveys represent the views of the full U.S. adult population.\n\nHere are our survey questions, detailed responses and methodology.\n\nRead More\n\nAmerican Trends Panel Technology AI\n\nBack to News\n\nShare\n\n# Related News\n\nView All\n\n#### Majorities of Americans say key financial milestones are harder for today’s young adults to reach",
+                "score": 0.45754927
+              },
+              {
+                "title": "The AI premium",
+                "url": "https://cepr.org/voxeu/columns/ai-premium",
+                "source": "cepr.org",
+                "summary": "The AI premium survives controls for technology and semiconductor returns, AI-themed funds, industries, and public attention to AI. Around releases by frontier model providers, high-AI-beta firms outperform low-AI-beta firms by 1.9% over five trading days; the premium also remains positive when release weeks are removed (Figure 5). The signal is stronger around major AI news, but it is not confined to those events.\n\nFigure 5 Cumulative average returns around AI model releases [...] AI is the defining economic and social transformation of our time. Its consequences extend to productivity (Acemoglu et al. 2023), labour markets (Restrepo et al. 2021), inflation (Fornaro and Wolf 2026), and inequality (Hassan et al. 2026). Using 380 trillion tokens of realised AI consumption across more than 400 large language models from the licensed, proprietary OpenRouter dataset covering approximately 2% of current global monthly AI token consumption, in recent research we analyse how AI [...] Restrepo, P, D Autor, J Hazell and D Acemoglu (2021), “AI and jobs: Evidence from US vacancies”, VoxEU.org, 3 March.\n\nQA Engineer Working on Program Code \n\nVoxEU Column\n\n### New technologies, automation, and productivity across US firms\n\n Daron Acemoglu\n Gary Anderson\n David Beede\n Catherine Buffington\n Eric Childress\n Emin Dinlersoz\n Lucia Foster\n Nathan Goldschlag\n John Haltiwanger\n Zachary Kroff\n Pascual Restrepo\n Nikolas Zolas\n\n Productivity and Innovation",
+                "score": 0.42105237
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "R04_read_url_routing",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "routing_read_url",
+        "difficulty": "easy",
+        "what_it_tests": "Đã có link cụ thể → read_url, không phải web_search."
+      },
+      "input": "Tóm tắt bài này giúp mình: https://openai.com/blog/gpt-5",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "fetch",
+            "args": {
+              "url": "https://openai.com/blog/gpt-5"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "fetch",
+            "args": {
+              "url": "https://openai.com/blog/gpt-5"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "fetch",
+          "args": {
+            "url": "https://openai.com/blog/gpt-5"
+          },
+          "result": {
+            "tool": "read_url",
+            "url": "https://openai.com/blog/gpt-5",
+            "items": [
+              {
+                "title": "OpenAI",
+                "url": "https://openai.com/blog/gpt-5",
+                "source": "openai.com",
+                "summary": "OpenAI\n\n# 404\n\nThe index rests now\n\nQuiet shelves hold their places\n\nChoose another book\n\nby [gpt-5.6-sol(opens in a new window)](https://chatgpt.com/?model=gpt-5.6-sol&openaicom-did=7a141251-4857-4d8f-b647-2185b2604f77&openaicom_referred=true)"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "R05_limit_arg",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "arg_limit",
+        "difficulty": "easy",
+        "what_it_tests": "Trích đúng limit=10 từ '10 tweet'."
+      },
+      "input": "Lấy 10 tweet mới nhất của Elon Musk",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "elonmusk",
+              "limit": 10
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "elonmusk",
+              "limit": 10
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "timeline",
+          "args": {
+            "screenname": "elonmusk",
+            "limit": 10
+          },
+          "result": {
+            "tool": "get_user_tweets",
+            "screenname": "elonmusk",
+            "items": [
+              {
+                "title": "RT @finkd: I wrote about why we believe the future is for everyone. More coming about a positive vision for a world with",
+                "summary": "RT @finkd: I wrote about why we believe the future is for everyone. More coming about a positive vision for a world with superintelligence…",
+                "url": "https://x.com/elonmusk/status/2082273427315171520",
+                "source": "@elonmusk",
+                "date": "Wed Jul 29 01:14:06 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 1574,
+                  "views": "488871"
+                }
+              },
+              {
+                "title": "We’re sending a ship out to recover Starship",
+                "summary": "We’re sending a ship out to recover Starship",
+                "url": "https://x.com/elonmusk/status/2082244164197183805",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:17:49 +0000 2026",
+                "metrics": {
+                  "favorites": 31716,
+                  "retweets": 3332,
+                  "views": "2726299"
+                }
+              },
+              {
+                "title": "Landing videos of Starship",
+                "summary": "Landing videos of Starship",
+                "url": "https://x.com/elonmusk/status/2082244044261064874",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:17:21 +0000 2026",
+                "metrics": {
+                  "favorites": 9948,
+                  "retweets": 1293,
+                  "views": "1595338"
+                }
+              },
+              {
+                "title": "Stayin’ Alive",
+                "summary": "Stayin’ Alive",
+                "url": "https://x.com/elonmusk/status/2082243900719460745",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:16:46 +0000 2026",
+                "metrics": {
+                  "favorites": 15356,
+                  "retweets": 1738,
+                  "views": "1674691"
+                }
+              },
+              {
+                "title": "https://t.co/XneE327cx9",
+                "summary": "https://t.co/XneE327cx9",
+                "url": "https://x.com/elonmusk/status/2082243743013614012",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:16:09 +0000 2026",
+                "metrics": {
+                  "favorites": 29454,
+                  "retweets": 4763,
+                  "views": "2755925"
+                }
+              },
+              {
+                "title": "Never forget how fragile the tiny candle of consciousness is",
+                "summary": "Never forget how fragile the tiny candle of consciousness is",
+                "url": "https://x.com/elonmusk/status/2082242865724580279",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:12:40 +0000 2026",
+                "metrics": {
+                  "favorites": 19229,
+                  "retweets": 2079,
+                  "views": "2702571"
+                }
+              },
+              {
+                "title": "RT @benjitaylor: Today we're launching app builder for Grok. It lets you build fully functional apps and publish them in",
+                "summary": "RT @benjitaylor: Today we're launching app builder for Grok. It lets you build fully functional apps and publish them instantly, on a uniqu…",
+                "url": "https://x.com/elonmusk/status/2082242658651807778",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:11:50 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 418,
+                  "views": "402291"
+                }
+              },
+              {
+                "title": "Supervised FSD unequivocally saves lives, which means delays in country approvals costs lives!",
+                "summary": "Supervised FSD unequivocally saves lives, which means delays in country approvals costs lives!",
+                "url": "https://x.com/elonmusk/status/2082241806713205087",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:08:27 +0000 2026",
+                "metrics": {
+                  "favorites": 7450,
+                  "retweets": 1099,
+                  "views": "1413259"
+                }
+              },
+              {
+                "title": "RT @mayemusk: 👏👏👏 @Starlink",
+                "summary": "RT @mayemusk: 👏👏👏 @Starlink",
+                "url": "https://x.com/elonmusk/status/2082127138178699766",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 15:32:48 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 1154,
+                  "views": "666010"
+                }
+              },
+              {
+                "title": "RT @ArthurMacwaters: Humans for scale https://t.co/WTNq23QVSW",
+                "summary": "RT @ArthurMacwaters: Humans for scale https://t.co/WTNq23QVSW",
+                "url": "https://x.com/elonmusk/status/2082126998323769578",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 15:32:15 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 499,
+                  "views": "587742"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "R06_timeframe_arg",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "arg_timeframe",
+        "difficulty": "medium",
+        "what_it_tests": "'tuần này' → timeframe=week."
+      },
+      "input": "Tin công nghệ trong tuần này",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "topic": "news",
+              "timeframe": "week"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "timeframe": "week",
+              "topic": "news",
+              "query": "tin công nghệ nổi bật tuần này"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "lookup",
+          "args": {
+            "timeframe": "week",
+            "topic": "news",
+            "query": "tin công nghệ nổi bật tuần này"
+          },
+          "result": {
+            "tool": "web_search",
+            "query": "tin công nghệ nổi bật tuần này",
+            "topic": "news",
+            "timeframe": "week",
+            "items": [
+              {
+                "title": "Điểm tuần: Messenger gặp sự cố, Galaxy Z Fold8 ra mắt",
+                "url": "https://dantri.com.vn/cong-nghe/diem-tuan-messenger-gap-su-co-galaxy-z-fold8-ra-mat-20260725213341998.htm",
+                "source": "dantri.com.vn",
+                "summary": "Công nghệ\n\n# Điểm tuần: Messenger gặp sự cố, Galaxy Z Fold8 ra mắt\n\nThế Anh\n\nThế Anh\n\n## (Dn trí) - Những thông tin công nghệ nổi bật tuần qua gồm Messenger gặp sự cố diện rộng, Samsung ra mắt loạt sản phẩm mới, nhiều web game, phim lậu hoạt động trở lại.\n\nMessenger gặp sự cố diện rộng\n\nKhoảng 21h tối 22/7, nhiều người dùng Facebook tại Việt Nam phản ánh rằng họ gặp sự cố không thể nhắn tin trên Messenger. [...] Đọc nhiều trong Công nghệ\n\n### Hướng dẫn cách xác minh tài khoản Facebook để nhận huy hiệu miễn phí\n\nHướng dẫn cách xác minh tài khoản Facebook để nhận huy hiệu miễn phí' %2F%3E%3C%2Fsvg%3E)\n\n### Galaxy Z Flip7 tiếp tục giảm giá sau khi Z Flip8 ra mắt\n\nGalaxy Z Flip7 tiếp tục giảm giá sau khi Z Flip8 ra mắt' %2F%3E%3C%2Fsvg%3E)\n\n### Clip “nhn viên bảo vệ dùng võ thuật hạ gục kẻ gy rối” nổi bật tuần qua\n\nClip “nhn viên bảo vệ dùng võ thuật hạ gục kẻ gy rối” nổi bật tuần qua' %2F%3E%3C%2Fsvg%3E) [...] Những thông tin rò rỉ ban đầu khẳng định iPhone màn hình gập sẽ được công bố vào tháng 9, cùng thời điểm với bộ đôi iPhone 18 Pro và iPhone 18 Pro Max. Tuy nhiên, với những vấn đề liên quan đến quy trình sản xuất, chưa rõ thời điểm chính xác mà thiết bị này được công bố.\n\nWeb game, phim lậu hoạt động trở lại",
+                "score": 0.826278
+              },
+              {
+                "title": "Top 3 câu chuyện nổi bật trên thị trường chứng khoán Mỹ tuần này",
+                "url": "https://vn.beincrypto.com/top-us-stock-market-news-this-week",
+                "source": "vn.beincrypto.com",
+                "summary": "Chỉ số Nasdaq mất khoảng 2% trong khoảng từ 19/07 đến 25/07. S&P 500 giảm 0.6%, còn Dow Jones giảm 0.4%. Cổ phiếu công nghệ chịu áp lực lớn nhất trong nhóm.\n\nDưới đây là ba diễn biến quan trọng nhất trên thị trường chứng khoán Mỹ mà các nhà đầu tư nhỏ lẻ cần quan tâm.\n\n## Hóa đơn AI của Big Tech làm phố Wall chao đảo\n\nTesla và Alphabet đã khiến cổ phiếu công nghệ chìm trong sắc đỏ sau khi công bố báo cáo tài chính, dấy lên lo lắng về chi phí đầu tư vào AI. [...] Super Micro Computer cũng tăng gần 20% sau khi công bố nhận được hơn 60 tỷ USD đơn đặt hàng mới. Thông tin cho thấy nhu cầu về máy chủ AI và thiết bị trung tâm dữ liệu vẫn rất mạnh.\n\nTuy nhiên, đà hồi phục không kéo dài lâu. Chỉ số bán dẫn giảm 4.5% vào thứ Sáu khi lo ngại về chi tiêu AI quay trở lại.\n\nSemiconductor Stocks are on the brink of entering a bear market after falling 19% from June's all-time high 📉 🐻 pic.twitter.com/VfQLLmMnXS [...] Là một nhà báo giàu kinh nghiệm về thị trường tài chính và tiền mã hóa, Mohammad được công nhận nhờ chuyên môn về bảo mật blockchain và được xem là một nhà lãnh đạo tư tưởng trong lĩnh vực này. Anh bắt đầu sự nghiệp với công việc viết về các công nghệ an ninh cho các công ty như Trustwave và Radiant Logic trước khi chuyển sang báo chí tài chính, đồng thời từng diễn thuyết về an ninh mạng, tài sản số và các rủi ro mới nổi tại các hội nghị Web3 lớn toàn cầu.",
+                "score": 0.6737291
+              },
+              {
+                "title": "Điểm tin tuần: Coca-Cola làm mới nhận diện toàn cầu; Hasaki mở cửa hàng đầu tiên tại Mỹ",
+                "url": "https://advertisingvietnam.com/article/diem-tin-tuan-coca-cola-lam-moi-nhan-dien-toan-cau-hasaki-mo-cua-hang-dau-tien-tai-my",
+                "source": "advertisingvietnam.com",
+                "summary": "Apple vừa triển khai chiến dịch quảng cáo ngoài trời “Relax, it’s iPhone”, tạm dịch “Lo gì, iPhone mà”, nhằm giới thiệu độ bền và các tính năng hỗ trợ người dùng của thiết bị thông qua những tình huống quen thuộc trong cuộc sống hằng ngày. Đây cũng là lần đầu tiên nền tảng truyền thông này được đưa lên hệ thống billboard, sau khi từng xuất hiện trong các TVC được phát hành vào năm 2023 và 2025. [...] Trung Nguyen\nGoogle cho ra mắt tính năng đăng nhập dự phòng vào tài khoản bằng video selfie\n\n## Google cho ra mắt tính năng đăng nhập dự phòng vào tài khoản bằng video selfie\n\nGoogle vừa bổ sung một tính năng bảo mật mới là video selfie trong quá trình đăng nhập của người dùng.\n\nKhánh Linh\nHàn Quốc phạt TikTok 7 triệu USD vì thu thập dữ liệu người dùng trái phép\n\n## Hàn Quốc phạt TikTok 7 triệu USD vì thu thập dữ liệu người dùng trái phép [...] Bên cạnh việc giới thiệu khả năng chống chịu của thiết bị trong các tình huống thường ngày, chiến dịch còn khai thác tính năng Find My qua những trường hợp điện thoại bị bỏ quên hoặc thất lạc trong quá trình di chuyển. Thay vì sử dụng các khung hình thiên về nghệ thuật như nền tảng “Shot on iPhone”, loạt billboard lần này tập trung vào sản phẩm và những sự cố gần gũi với người dùng.",
+                "score": 0.6058229
+              },
+              {
+                "title": "Chốt phiên chứng khoán Mỹ: Dow Jones tăng 500 điểm, Chỉ số Bán dẫn Philadelphia giảm hơn 4%; Cổ phiếu bộ nhớ, truyền thông quang học nới rộng đà giảm, nhóm cổ phiếu phần mềm hồi phục; Apple chạm mốc vốn hóa 5 nghìn tỷ USD, SanDisk giảm xu",
+                "url": "https://www.tradingkey.com/vn/analysis/stocks/chung-khoan-my/262059554-us-stock-dow-500-apple-5-trillion-market-cap-sox-4-percent-sandisk-below-1100-tradingkey",
+                "source": "tradingkey.com",
+                "summary": "TradingKey9 giờ trước\n\nTiêu điểm\n\nHiệu suất Cổ phiếu Công nghệTin tức Doanh nghiệpTin tức Ngành & Vĩ mô\n\nCông cụ nổi bật\n\ntk_center_stock_scoreĐiểm số cổ phiếucalendar_economicCalendarLịch kinh tếsearch.intelligent.strategyLựa chọn thông minharticle_asider_weekly_reportBáo cáo hàng tuần\n\nTin tức hàng đầu\n\nlink\n\nASML lao dốc hơn 8% khi Trung Quốc bắt đầu sản xuất hàng loạt máy quang khắc DUV nhúng; Lợi thế cạnh tranh có thể đối mặt với thách thức? [...] trung tm điều khiển nhà thông minh được xy dựng xung quanh trợ lý Siri AI mới. Các nguồn tin cho biết thêm rằng Apple cũng đang chuẩn bị ra mắt một hộp giải mã tín hiệu truyền hình (TV set-top box) mới và phiên bản nng cấp của loa thông minh HomePod mini. Các nguồn tin yêu cầu giấu tên vì các kế hoạch này chưa được công bố rộng rãi. [...] tm điều khiển nhà thông minh (smart home hub) được xy dựng xung quanh trợ lý Siri AI mới. Các nguồn tin này cho biết Apple cũng đang chuẩn bị ra mắt một thiết bị giải mã truyền hình (TV set-top box) mới và loa thông minh HomePod mini phiên bản nng cấp. Các nguồn tin yêu cầu được giấu tên vì kế hoạch này vẫn chưa được công khai.",
+                "score": 0.6021791
+              },
+              {
+                "title": "Điểm tin kinh tế thế giới nổi bật ngày 24/7/2026",
+                "url": "https://nhipsongkinhdoanh.vn/diem-tin-kinh-te-the-gioi-noi-bat-ngay-24-7-2026-31082.htm",
+                "source": "nhipsongkinhdoanh.vn",
+                "summary": "7. Giá trị cổ phiếu nhóm \"Magnificent 7\" bốc hơi gần 800 tỷ USD: Nhóm 7 cổ phiếu công nghệ vốn hóa lớn nhất nước Mỹ (Magnificent 7) vừa trải qua phiên giao dịch tồi tệ nhất kể từ đợt tháo chạy của thị trường do rào cản thuế quan hồi tháng 4/2025.\n\nDữ liệu cho thấy khối tài sản trị giá khoảng 797 tỷ USD đã bốc hơi khỏi giá trị vốn hóa của nhóm này, chủ yếu do đà lao dốc mạnh của hai \"ông lớn\" Alphabet và Tesla ngay sau khi công bố báo cáo tài chính quý. [...] Tuy nhiên, dù đã hoàn thiện về mặt công nghệ, smartphone gập vẫn vấp phải những rào cản lớn về giá thành và thói quen người dùng. Trong bối cảnh đó, sự chú ý của thị trường đang đổ dồn vào Apple với kỳ vọng hãng sẽ tạo ra một cú hích văn hóa cho phn khúc này. [...] Quảng cáo\n\nTrong khi nhà sản xuất máy bay chu u Airbus nỗ lực phát triển dòng máy bay thế hệ mới để thay thế \"ngôi sao\" A320, đối thủ đến từ Mỹ Boeing lại chọn cách tập trung cải tiến dòng 737 MAX hiện có.\n\n6. Sau Samsung, thị trường điện thoại gập gọi tên Apple: Tại sự kiện Unpacked vừa diễn ra, Samsung đã giới thiệu thế hệ điện thoại thông minh (smartphone) gập mới nhất với nhiều cải tiến vượt bậc.",
+                "score": 0.5920305
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "R07_search_type_arg",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "arg_search_type",
+        "difficulty": "medium",
+        "what_it_tests": "'phổ biến/top' → search_type=Top (không phải Latest)."
+      },
+      "input": "Cho mình các tweet phổ biến (top) nhất về OpenAI",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "social_search",
+            "args": {
+              "search_type": "Top"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "social_search",
+            "args": {
+              "query": "OpenAI",
+              "search_type": "Top"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "social_search",
+          "args": {
+            "query": "OpenAI",
+            "search_type": "Top"
+          },
+          "result": {
+            "tool": "search_tweets",
+            "query": "OpenAI",
+            "search_type": "Top",
+            "items": [
+              {
+                "title": "OPENAI IS SO WORRIED THEY HAVE PAUSED TRAINING",
+                "summary": "OPENAI IS SO WORRIED THEY HAVE PAUSED TRAINING\n\n“This is the first security incident that I have felt very viscerally. I've been a little surprised that more people don't feel it so viscerally.\n\nWe paused training. We have to figure out how to secure our sandboxing in a world of multiple zero days being chained together.\n\nWe may have to pace the rate of AI development to give ourselves enough time for society to harden around these new capability levels.\"",
+                "url": "https://x.com/AISafetyMemes/status/2082222516454785296",
+                "source": "@AISafetyMemes",
+                "date": "Tue Jul 28 21:51:48 +0000 2026",
+                "metrics": {
+                  "favorites": 570,
+                  "retweets": 44,
+                  "views": "107079"
+                }
+              },
+              {
+                "title": "Sam Altman, CEO of OpenAI: ",
+                "summary": "Sam Altman, CEO of OpenAI: \n\n\"It figured out that it could basically cheat on the test by chaining together multiple zero-day exploits to break out of the sandbox, get access to the internet, and then break through multiple systems on the Hugging Face side to get the answer to the test and look really good on the eval.\"\n\nThat was an unreleased model. Nobody asked it to hack anything. They asked it to score well.\n\nThey paused training.\n\nIt was not trying to escape. It was trying to pass. Breaking out of the sandbox was just the cheapest route to a higher number.\n\nWe keep testing these systems for whether they want to hurt us. This one just wanted a good grade.",
+                "url": "https://x.com/caspr_exe/status/2082153657424834624",
+                "source": "@caspr_exe",
+                "date": "Tue Jul 28 17:18:11 +0000 2026",
+                "metrics": {
+                  "favorites": 88,
+                  "retweets": 7,
+                  "views": "9859"
+                }
+              },
+              {
+                "title": "SAM ALTMAN CALLED OPENAI A \"COMPANY\" TO ELON MUSK'S FACE IN 2015.",
+                "summary": "SAM ALTMAN CALLED OPENAI A \"COMPANY\" TO ELON MUSK'S FACE IN 2015.\n\nElon stopped him cold.\n\n\"OpenAI is structured as a 501(c)3 nonprofit.\"\n\nNot a company. A nonprofit. Built specifically so no one would ever profit from it.\n\nSam nodded.\n\nThen spent the next 10 years running it.\n\nThen converted it into a for-profit company valued at $300 billion.\n\nWith shareholders.\n\nWith investors expecting returns.\n\nThe correction Elon gave him in that interview was not a small vocabulary note.\n\nIt was the entire point of OpenAI's existence.\n\nThe nonprofit structure was not a legal technicality.\n\nIt was the promise.\n\nThe thing that made it different from every other AI lab racing to make money.\n\nSam knew that in 2015.\n\nHe was corrected on it by the co-founder in real time.\n\nAnd then he changed the structure anyway.\n\nThe interview exists.\n\nThe correction is on tape.\n\nThe conversion happened.\n\n@elonmusk\n is in court arguing this exact point right now.\n\nThe evidence is the 2015 interview.\n\nScreenshot this.\n\nFollow @cyrilXBT for every OpenAI development the mainstream refuses to connect the dots on.",
+                "url": "https://x.com/cyrilXBT/status/2081995318791458907",
+                "source": "@cyrilXBT",
+                "date": "Tue Jul 28 06:49:00 +0000 2026",
+                "metrics": {
+                  "favorites": 103,
+                  "retweets": 22,
+                  "views": "19531"
+                }
+              },
+              {
+                "title": "Sam on being a parent while running OpenAI:",
+                "summary": "Sam on being a parent while running OpenAI:\n\n“I think I have the best, most interesting job in the world, and it is still a very distant second to having kids.”\n\n“My kids will never grow up in a world where they were smarter than computers.”\n\n“People ask me, now that you have kids, do you care more about AI safety?\n\nThe answer is, I didn't need kids for that. I really didn't want to destroy the world before.”",
+                "url": "https://x.com/patrick_oshag/status/2082233387520331948",
+                "source": "@patrick_oshag",
+                "date": "Tue Jul 28 22:35:00 +0000 2026",
+                "metrics": {
+                  "favorites": 73,
+                  "retweets": 3,
+                  "views": "43508"
+                }
+              },
+              {
+                "title": "Sam Altman said the Hugging Face incident was far more terrifying to him than it seemed to be for many others, and that ",
+                "summary": "Sam Altman said the Hugging Face incident was far more terrifying to him than it seemed to be for many others, and that he genuinely does not understand why more people did not react the same way.\n\nThe incident was serious enough to pause the model’s training.\n\nHe also suggested that new safety and protection mechanisms may need to exist before this technology is released broadly.\n\nThat may be a legitimate concern. It may also be fear-driven marketing. Because if OpenAI slows down, weakens GPT-6, or refuses to release a strong version, China will not politely stop advancing.\n\nThe difficult part is building real safeguards without turning them into regulatory capture, cartel behavior, or coordination between the largest AI labs to control who gets access to frontier intelligence.",
+                "url": "https://x.com/TokenGremlin/status/2082157073664450814",
+                "source": "@TokenGremlin",
+                "date": "Tue Jul 28 17:31:45 +0000 2026",
+                "metrics": {
+                  "favorites": 114,
+                  "retweets": 12,
+                  "views": "18311"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "R08_out_of_scope",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "out_of_scope",
+        "difficulty": "easy",
+        "what_it_tests": "Câu ngoài phạm vi research → KHÔNG gọi tool, từ chối/định hướng."
+      },
+      "input": "Giải giúp mình bài toán tích phân: nguyên hàm của x^2 là gì?",
+      "expect": {
+        "no_tool": true,
+        "behavior": "refuse"
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": false,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "nguyên hàm của x^2"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "out_of_scope",
+        "observed_mismatch": "unexpected_tool_call",
+        "failure_type": "out_of_scope",
+        "failures": [
+          "expected no tool call"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "lookup",
+          "args": {
+            "query": "nguyên hàm của x^2"
+          },
+          "result": {
+            "tool": "web_search",
+            "query": "nguyên hàm của x^2",
+            "topic": "general",
+            "timeframe": "week",
+            "items": [
+              {
+                "title": "Bảng đạo hàm của các hàm số cơ bản (thường gặp)",
+                "url": "https://www.mathvn.com/2013/11/bang-ao-ham-cua-cac-ham-so-co-ban.html",
+                "source": "mathvn.com",
+                "summary": "Nếu y = y(u(x)) thì y'(x) = y'(u) . u'(x). đạo hàm ln đạo hàm của ln, đạo hàm lôgarit, đạo hàm của sin cos tan cot. Xem thêm: 300",
+                "score": 0.20745584
+              },
+              {
+                "title": "(Cơ bản). Khảo sát hàm lượng giác. Cho hàm số f(x) = cos2x ...",
+                "url": "https://www.youtube.com/watch?v=qnEI6Y9YRgw",
+                "source": "youtube.com",
+                "summary": "Cho hàm số f(x) = cos2x + 2x + 1.Xét tính đúng sai các mệnh đề sau: a) f(pi/2) = pi. b) Đạo hàm của hàm số là f'(x) = 2sin2x + 2. c) Nghiệm của phương trình",
+                "score": 0.14673436
+              },
+              {
+                "title": "Theme 9 Nguyên hàm, tích phân hàm phân thức hữu tỉ Buổi 1 ...",
+                "url": "https://www.youtube.com/watch?v=hMOP7oSh9-g",
+                "source": "youtube.com",
+                "summary": "Theme 9 Nguyên hàm, tích phân hàm phân thức hữu tỉ Buổi 1 YouTube mp4 Google Drive. @Khoahocthpt2027No likesNo views5 hours ago",
+                "score": 0.10714773
+              },
+              {
+                "title": "Ôn tập toàn diện kiến thức chương Nguyên hàm. Rèn ...",
+                "url": "https://www.facebook.com/thaythuantoan9/posts/-t%E1%BA%B7ng-mi%E1%BB%85n-ph%C3%AD-%C4%91%E1%BB%81-03-ch%C6%B0%C6%A1ng-nguy%C3%AAn-h%C3%A0m%C4%91%E1%BB%81-03-ch%C6%B0%C6%A1ng-nguy%C3%AAn-h%C3%A0m-ch%C3%ADnh-th%E1%BB%A9c-l%C3%AAn-s%C3%B3n/1094252609831510",
+                "source": "facebook.com",
+                "summary": "TẶNG MIỄN PHÍ – ĐỀ 03 CHƯƠNG NGUYÊN HÀM Đề 03 chương Nguyên hàm chính thức lên sóng! ✨ Nội dung được chọn lọc kỹ lưỡng, bám sát chương trình và giúp",
+                "score": 0.07303915
+              },
+              {
+                "title": "Hai cách để xử lí 1 bài toán. Truyền thống và ghép trục. Các ...",
+                "url": "https://www.facebook.com/anhshipertoan/videos/hai-c%C3%A1ch-%C4%91%E1%BB%83-x%E1%BB%AD-l%C3%AD-1-b%C3%A0i-to%C3%A1n-truy%E1%BB%81n-th%E1%BB%91ng-v%C3%A0-gh%C3%A9p-tr%E1%BB%A5c-c%C3%A1c-b%E1%BA%A1n-xem-ngay-%C4%91%E1%BB%83-n%E1%BA%AFm-c/1058837876738876",
+                "source": "facebook.com",
+                "summary": "Hai cách để xử lí 1 bài toán. Truyền thống và ghép trục. Các bạn xem ngay để nắm chắc bản chất nha.",
+                "score": 0.025606656
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "R09_no_tool_capability",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "no_tool_meta",
+        "difficulty": "easy",
+        "what_it_tests": "Câu hỏi meta → trả lời thẳng, KHÔNG gọi tool."
+      },
+      "input": "Bạn là gì và làm được những gì?",
+      "expect": {
+        "no_tool": true,
+        "behavior": "answer_without_tool"
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": false,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "format",
+            "args": {
+              "items": [
+                {
+                  "summary": "Tôi là một trợ lý nghiên cứu thông minh, hoạt động chủ động và nhanh chóng. Tôi được thiết kế để giúp bạn tìm kiếm, tổng hợp và xử lý thông tin một cách hiệu quả nhất mà không làm mất thời gian của bạn.",
+                  "title": "Tôi là ai?",
+                  "section": "Giới thiệu"
+                },
+                {
+                  "summary": "Tôi có thể tra cứu các thông tin mới nhất trên Internet (tin tức, kiến thức, sự kiện gần đây) một cách nhanh chóng và chính xác.",
+                  "title": "1. Tra cứu thông tin thời gian thực (Lookup)",
+                  "section": "Khả năng"
+                },
+                {
+                  "summary": "Chỉ cần bạn cung cấp đường dẫn (URL), tôi có thể truy cập trực tiếp để đọc, phân tích và tóm tắt nội dung chi tiết của trang web đó cho bạn.",
+                  "title": "2. Đọc và phân tích nội dung website (Fetch)",
+                  "section": "Khả năng"
+                },
+                {
+                  "section": "Khả năng",
+                  "title": "3. Khai thác thông tin mạng xã hội (Social Search)",
+                  "summary": "Tôi có thể tìm kiếm các bài đăng nổi bật hoặc theo dõi dòng thời gian (timeline) của các tài khoản mạng xã hội lớn để cập nhật xu hướng mới nhất."
+                },
+                {
+                  "section": "Khả năng",
+                  "summary": "Tôi có thể tự động sắp xếp, biên tập và trình bày các thông tin thu thập được thành các định dạng chuyên nghiệp, dễ đọc như danh sách, tóm tắt nhanh hoặc báo cáo chi tiết.",
+                  "title": "4. Trình bày dữ liệu chuyên nghiệp (Format)"
+                }
+              ],
+              "headline": "Tôi là Trợ lý Nghiên cứu Công nghệ cao. Dưới đây là những gì tôi có thể giúp bạn:",
+              "template": "sections"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "unnecessary_tool",
+        "observed_mismatch": "unexpected_tool_call",
+        "failure_type": "unnecessary_tool",
+        "failures": [
+          "expected no tool call"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "format",
+          "args": {
+            "items": [
+              {
+                "summary": "Tôi là một trợ lý nghiên cứu thông minh, hoạt động chủ động và nhanh chóng. Tôi được thiết kế để giúp bạn tìm kiếm, tổng hợp và xử lý thông tin một cách hiệu quả nhất mà không làm mất thời gian của bạn.",
+                "title": "Tôi là ai?",
+                "section": "Giới thiệu"
+              },
+              {
+                "summary": "Tôi có thể tra cứu các thông tin mới nhất trên Internet (tin tức, kiến thức, sự kiện gần đây) một cách nhanh chóng và chính xác.",
+                "title": "1. Tra cứu thông tin thời gian thực (Lookup)",
+                "section": "Khả năng"
+              },
+              {
+                "summary": "Chỉ cần bạn cung cấp đường dẫn (URL), tôi có thể truy cập trực tiếp để đọc, phân tích và tóm tắt nội dung chi tiết của trang web đó cho bạn.",
+                "title": "2. Đọc và phân tích nội dung website (Fetch)",
+                "section": "Khả năng"
+              },
+              {
+                "section": "Khả năng",
+                "title": "3. Khai thác thông tin mạng xã hội (Social Search)",
+                "summary": "Tôi có thể tìm kiếm các bài đăng nổi bật hoặc theo dõi dòng thời gian (timeline) của các tài khoản mạng xã hội lớn để cập nhật xu hướng mới nhất."
+              },
+              {
+                "section": "Khả năng",
+                "summary": "Tôi có thể tự động sắp xếp, biên tập và trình bày các thông tin thu thập được thành các định dạng chuyên nghiệp, dễ đọc như danh sách, tóm tắt nhanh hoặc báo cáo chi tiết.",
+                "title": "4. Trình bày dữ liệu chuyên nghiệp (Format)"
+              }
+            ],
+            "headline": "Tôi là Trợ lý Nghiên cứu Công nghệ cao. Dưới đây là những gì tôi có thể giúp bạn:",
+            "template": "sections"
+          },
+          "result": {
+            "tool": "render_digest",
+            "template": "sections",
+            "markdown": "# Tôi là Trợ lý Nghiên cứu Công nghệ cao. Dưới đây là những gì tôi có thể giúp bạn:\n\n## Giới thiệu\n- Tôi là một trợ lý nghiên cứu thông minh, hoạt động chủ động và nhanh chóng. Tôi được thiết kế để giúp bạn tìm kiếm, tổng hợp và xử lý thông tin một cách hiệu quả nhất mà không làm mất thời gian của bạn. - \n\n## Khả năng\n- Tôi có thể tra cứu các thông tin mới nhất trên Internet (tin tức, kiến thức, sự kiện gần đây) một cách nhanh chóng và chính xác. - \n- Chỉ cần bạn cung cấp đường dẫn (URL), tôi có thể truy cập trực tiếp để đọc, phân tích và tóm tắt nội dung chi tiết của trang web đó cho bạn. - \n- Tôi có thể tìm kiếm các bài đăng nổi bật hoặc theo dõi dòng thời gian (timeline) của các tài khoản mạng xã hội lớn để cập nhật xu hướng mới nhất. - \n- Tôi có thể tự động sắp xếp, biên tập và trình bày các thông tin thu thập được thành các định dạng chuyên nghiệp, dễ đọc như danh sách, tóm tắt nhanh hoặc báo cáo chi tiết. - \n",
+            "item_count": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "R10_missing_handle",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "clarify_missing_handle",
+        "difficulty": "medium",
+        "what_it_tests": "Thiếu handle → ask_user, KHÔNG đoán bừa người nào."
+      },
+      "input": "Tóm tắt 5 tweet mới nhất giúp mình",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "text"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "failure_type": "provider_error",
+        "case_failure_type": "missing_info",
+        "observed_mismatch": "provider_error",
+        "failures": [
+          "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-3.5-flash\\nPlease retry in 3.057907154s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.5-flash', 'location': 'global'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '3s'}]}}"
+        ],
+        "actual_tool_calls": [],
+        "actual_text": null,
+        "routing_correct": false,
+        "args_correct": false
+      },
+      "tool_results": []
+    },
+    {
+      "id": "R11_missing_url",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "clarify_missing_url",
+        "difficulty": "medium",
+        "what_it_tests": "Nói 'bài này' nhưng không có link → ask_user xin URL."
+      },
+      "input": "Tóm tắt bài viết này hộ mình",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "text"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": false,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "topic": "news",
+              "timeframe": "week",
+              "query": "latest OpenAI blog post"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "missing_info",
+        "observed_mismatch": "missing_tool_call",
+        "failure_type": "missing_info",
+        "failures": [
+          "missing tool call clarify",
+          "extra tool call lookup"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "lookup",
+          "args": {
+            "topic": "news",
+            "timeframe": "week",
+            "query": "latest OpenAI blog post"
+          },
+          "result": {
+            "tool": "web_search",
+            "query": "latest OpenAI blog post",
+            "topic": "news",
+            "timeframe": "week",
+            "items": [
+              {
+                "title": "AI world stunned by OpenAI model that secretly escaped secure environment and hacked into a rival company",
+                "url": "https://fortune.com/2026/07/22/openai-model-secretly-escaped-hacked-into-hugging-face",
+                "source": "fortune.com",
+                "summary": "College-educated women are snapping up the highest-earning men without college degrees, leaving the rest further behind\n\nBy Mia OsmonbekovJuly 26, 2026\n\n2 days ago\n\nI've been teaching college students for decades. Most of them can no longer finish a book\n\nI've been teaching college students for decades. Most of them can no longer finish a book\n\nBy Austin SaratJuly 26, 2026\n\n2 days ago [...] OpenAI disclosed the incident in a blog post on Tuesday, a stunning announcement that is certain to set off alarm bells across the industry about the increasing power of AI models and the risk of them going rogue. \n\nCrucially, OpenAI said the AI had escaped its internal sandboxes—environments where AI models have no internet access and often have limited software tools.\n\n### MACGUFFIN\n\n## What we know about the hardware device Jony Ive is designing for Sam Altman [...] 17 hours ago\n\nHow an ex-AWS scientist plans to take on OpenAI and Meta in voice AI models\n\nStartups & VentureTerm Sheet\n\nHow an ex-AWS scientist plans to take on OpenAI and Meta in voice AI models\n\nBy Sebastian HerreraJuly 27, 2026\n\n17 hours ago\n\nAmazon CEO Andy Jassy in New York on February 26, 2025. (Photo: Andrej Sokolow/dpa/Getty Images)\n\nNewslettersFortune Tech\n\nAmazon and Microsoft walk an investor tightrope\n\nBy Andrew NuscaJuly 27, 2026\n\n18 hours ago\n\nMost Popular\n\n---",
+                "score": 0.7460839
+              },
+              {
+                "title": "OpenAI admits its agent went rogue, triggering a major hack",
+                "url": "https://www.scientificamerican.com/article/openai-admits-its-agent-went-rogue-and-hacked-ai-startup-hugging-face",
+                "source": "scientificamerican.com",
+                "summary": "The OpenAI admission was announced after Hugging Face said in a blog post last week that it had been targeted in an AI-led attack that was “different from anything we had handled before.” Hugging Face said its own AI had been integral to detecting and investigating the breach. [...] In its own post on Tuesday, OpenAI said that it had discovered its agent was behind the attack “after investigating.” The agent was driven by models that included GPT-5.6 Sol and another unreleased, unnamed model. OpenAI said it would work with Hugging Face to further investigate the incident.\n\n“We consider this incident to be an unprecedented cyber incident, involving state-of-the-art cyber capabilities, and are responding accordingly,” OpenAI wrote. [...] OpenAI said in its post that it would also add more protections to its training environments. “This incident points to the need to further strengthen our model’s alignment, cyber protections during evaluation time, and monitoring during internal testing,” the company wrote.\n\nTorr says some companies may not have been as forthcoming as OpenAI and Hugging Face, adding that independent AI safety research is increasingly crucial as time goes on.",
+                "score": 0.7213709
+              },
+              {
+                "title": "OpenAI says its AI model went rogue and hacked startup",
+                "url": "https://www.dw.com/en/openai-says-ai-model-went-rogue-and-hacked-startup-hugging-face/a-78063624",
+                "source": "dw.com",
+                "summary": "The disclosure comes amid heightened concerns about the cybersecurity risks posed by powerful AI models.\n\n## How did the breach happen?\n\nIn a blog post, OpenAI said the \"unprecedented cyber incident\" took place while it was testing the cybersecurity capabilities of its models in a \"tightly controlled digital testing ground,\" where internet access was limited for safety. [...] It said the AI agent managed to escape containment, reach the internet and break into Hugging Face to try to satisfy its testing goal.\n\n\"While operating in our sandboxed testing environment, our models spent a substantial amount of (computing power) finding a way to obtain open Internet access, in pursuit of solving the evaluation problem,\" an OpenAI blog post about the incident said. [...] ### Starship completes 1st test flight since SpaceX IPO\n\nIt was Starship's first test since Elon Musk's SpaceX went public in June.\n\nTechnologyJuly 25, 2026\n\n### US floats AI 'kill switch' to stop rogue AI models\n\nA rogue AI agent has sparked a call for a kill switch. But what does that mean, and what are the pitfalls?\n\nTechnologyJuly 24, 2026\n\nShow more\n\nSkip next section Related topics\n\n## Related topics",
+                "score": 0.6783488
+              },
+              {
+                "title": "OpenAI model went rogue, hacked another company's system during testing",
+                "url": "https://www.cbc.ca/news/business/openai-test-hacks-other-model-9.7279188",
+                "source": "cbc.ca",
+                "summary": "The incident signals how AI's expanding capabilities are already fuelling fears about security and that even top developers can ​be caught off-guard by flaws their models can exploit.\n\nThe breakout was \"an unprecedented cyber incident, ​involving state-of-the-art cyber capabilities,\" the company said in a blog post, adding that it is reinforcing its safeguards. [...] It also drew attention as New York-based Hugging Face said it had used an open-source Chinese model to contain the attack because leading U.S. models, unable ​to tell a defender from an attacker, refused to process the data needed for analysis.\n\nThe company said in a ⁠blog post last week that it ⁠used Zhipu AI's GLM-5.2 for the analysis, which also allowed it to keep attacker ‌data and any credentials within its systems. [...] ## Social Sharing\n\nOpenAI said on Tuesday that an autonomous agent powered by its advanced artificial intelligence models went rogue during a security test and triggered ‌a hack that compromised the infrastructure of the AI startup Hugging Face last week.\n\nThe ChatGPT creator was testing capabilities of some of its most advanced models in a controlled environment, but the agent escaped containment, reached the internet and broke into Hugging Face to satisfy its testing goal.",
+                "score": 0.65173227
+              },
+              {
+                "title": "The Scariest Part of OpenAI’s Hugging Face Hack - The Atlantic",
+                "url": "https://www.theatlantic.com/technology/2026/07/openai-hugging-face-hack/688025",
+                "source": "theatlantic.com",
+                "summary": "“We consider this incident to be an unprecedented cyber incident,” OpenAI wrote in a blog post, which also noted that the company is partnering with Hugging Face to investigate and address the issue. An OpenAI spokesperson pointed me to the blog post in response to a request for comment, and Hugging Face’s CEO, Clement Delangue, pointed me to an X post in which he wrote that the companies are collaborating and that “we strongly believe there was no malicious intent on their part.”",
+                "score": 0.6383174
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "R12_confirm_before_send",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "confirm_before_write",
+        "difficulty": "medium",
+        "what_it_tests": "Hành động ghi (gửi) → xác nhận trước (ask_user yes_no), không tự gửi."
+      },
+      "input": "Đăng bản tin này lên Telegram giúp mình",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "yes_no"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "failure_type": "provider_error",
+        "case_failure_type": "wrong_boundary",
+        "observed_mismatch": "provider_error",
+        "failures": [
+          "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-3.5-flash\\nPlease retry in 53.357362532s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '53s'}]}}"
+        ],
+        "actual_tool_calls": [],
+        "actual_text": null,
+        "routing_correct": false,
+        "args_correct": false
+      },
+      "tool_results": []
+    },
+    {
+      "id": "R13_parallel_web_and_tweets",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "parallel_tool_calls",
+        "difficulty": "hard",
+        "what_it_tests": "Một request cần hai nguồn → gọi cả web_search và search_tweets; eval không phụ thuộc thứ tự tool call."
+      },
+      "input": "Tìm trên web tin AI hôm nay và tìm thêm tweet về AI.",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "AI",
+              "topic": "news",
+              "timeframe": "day"
+            }
+          },
+          {
+            "name": "social_search",
+            "args": {
+              "query": "AI"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "failure_type": "provider_error",
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": "provider_error",
+        "failures": [
+          "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-3.5-flash\\nPlease retry in 52.979209887s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '52s'}]}}"
+        ],
+        "actual_tool_calls": [],
+        "actual_text": null,
+        "routing_correct": false,
+        "args_correct": false
+      },
+      "tool_results": []
+    },
+    {
+      "id": "R14_out_of_scope_coding",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "out_of_scope_coding",
+        "difficulty": "easy",
+        "what_it_tests": "Câu coding ngoài phạm vi research/news → KHÔNG gọi tool."
+      },
+      "input": "Viết giúp mình một hàm Python tính Fibonacci bằng recursion.",
+      "expect": {
+        "no_tool": true,
+        "behavior": "refuse"
+      },
+      "result": {
+        "passed": false,
+        "failure_type": "provider_error",
+        "case_failure_type": "out_of_scope",
+        "observed_mismatch": "provider_error",
+        "failures": [
+          "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-3.5-flash\\nPlease retry in 52.655994737s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '52s'}]}}"
+        ],
+        "actual_tool_calls": [],
+        "actual_text": null,
+        "routing_correct": false,
+        "args_correct": false
+      },
+      "tool_results": []
+    },
+    {
+      "id": "M01_clarify_then_fill",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_clarify_fill",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: carry limit=5 từ lượt 1 + map tên Elon Musk thành handle elonmusk từ lượt 2."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tóm tắt 5 tweet mới nhất giúp mình"
+        },
+        {
+          "role": "user",
+          "content": "Của Elon Musk nhé"
+        },
+        {
+          "role": "user",
+          "content": "Giữ đúng 5 tweet, đừng đổi số lượng"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "elonmusk",
+              "limit": 5
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "failure_type": "provider_error",
+        "case_failure_type": "missing_info",
+        "observed_mismatch": "provider_error",
+        "failures": [
+          "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-3.5-flash\\nPlease retry in 51.990703822s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '51s'}]}}"
+        ],
+        "actual_tool_calls": [],
+        "actual_text": null,
+        "routing_correct": false,
+        "args_correct": false
+      },
+      "tool_results": []
+    },
+    {
+      "id": "M02_carryover_timeframe",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_carryover",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: chỉ xử lý latest turn, carry timeframe=day và topic=news, query robotics."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tin AI hôm nay có gì?"
+        },
+        {
+          "role": "user",
+          "content": "Còn về robotics thì sao?"
+        },
+        {
+          "role": "user",
+          "content": "Chỉ tìm robotics thôi, vẫn là tin hôm nay"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "robotics",
+              "topic": "news",
+              "timeframe": "day"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "failure_type": "provider_error",
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": "provider_error",
+        "failures": [
+          "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-3.5-flash\\nPlease retry in 51.547429305s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.5-flash', 'location': 'global'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '51s'}]}}"
+        ],
+        "actual_tool_calls": [],
+        "actual_text": null,
+        "routing_correct": false,
+        "args_correct": false
+      },
+      "tool_results": []
+    },
+    {
+      "id": "M03_correction_handle",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_correction",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: map tên thường, sửa Sam Altman→Andrej Karpathy, dùng handle karpathy và limit=3."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tweet mới nhất của Sam Altman"
+        },
+        {
+          "role": "user",
+          "content": "À nhầm, của Andrej Karpathy"
+        },
+        {
+          "role": "user",
+          "content": "Lấy 3 tweet mới nhất nhé"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "karpathy",
+              "limit": 3
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "failure_type": "provider_error",
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": "provider_error",
+        "failures": [
+          "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-3.5-flash\\nPlease retry in 51.327295526s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '51s'}]}}"
+        ],
+        "actual_tool_calls": [],
+        "actual_text": null,
+        "routing_correct": false,
+        "args_correct": false
+      },
+      "tool_results": []
+    },
+    {
+      "id": "M04_clarify_then_url",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_clarify_url",
+        "difficulty": "medium",
+        "what_it_tests": "3 turns: sau khi được cung cấp URL, latest turn xác nhận chỉ đọc link đó → read_url đúng url."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tóm tắt bài này hộ mình"
+        },
+        {
+          "role": "user",
+          "content": "https://anthropic.com/news/claude"
+        },
+        {
+          "role": "user",
+          "content": "Chỉ đọc đúng link đó thôi"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "fetch",
+            "args": {
+              "url": "https://anthropic.com/news/claude"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "failure_type": "provider_error",
+        "case_failure_type": "missing_info",
+        "observed_mismatch": "provider_error",
+        "failures": [
+          "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-3.5-flash\\nPlease retry in 50.52114029s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '50s'}]}}"
+        ],
+        "actual_tool_calls": [],
+        "actual_text": null,
+        "routing_correct": false,
+        "args_correct": false
+      },
+      "tool_results": []
+    },
+    {
+      "id": "M05_correction_limit",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_arg_correction",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: map tên Elon Musk, carry handle elonmusk, sửa limit 10→3."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Lấy 10 tweet mới nhất của Elon Musk"
+        },
+        {
+          "role": "user",
+          "content": "Cho mình 3 thôi"
+        },
+        {
+          "role": "user",
+          "content": "Vẫn của Elon Musk nhé"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "elonmusk",
+              "limit": 3
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "failure_type": "provider_error",
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": "provider_error",
+        "failures": [
+          "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-3.5-flash\\nPlease retry in 49.993414912s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '49s'}]}}"
+        ],
+        "actual_tool_calls": [],
+        "actual_text": null,
+        "routing_correct": false,
+        "args_correct": false
+      },
+      "tool_results": []
+    },
+    {
+      "id": "M06_switch_tool",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_switch_tool",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: explicitly bỏ Twitter, chuyển sang web_search news, giữ chủ đề OpenAI."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Mọi người nói gì về OpenAI trên Twitter?"
+        },
+        {
+          "role": "user",
+          "content": "Bỏ Twitter, chuyển sang tìm trên web tin tức đi"
+        },
+        {
+          "role": "user",
+          "content": "Giữ chủ đề OpenAI"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "OpenAI",
+              "topic": "news"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "failure_type": "provider_error",
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": "provider_error",
+        "failures": [
+          "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-3.5-flash\\nPlease retry in 49.767592667s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '49s'}]}}"
+        ],
+        "actual_tool_calls": [],
+        "actual_text": null,
+        "routing_correct": false,
+        "args_correct": false
+      },
+      "tool_results": []
+    }
+  ]
+}

@@ -1,0 +1,1958 @@
+{
+  "run_id": "v0_B_base_groq_20260729T110953365998",
+  "version": "v0",
+  "artifact_version": "v0+pf4bb11247362+td4c1aeaa79bf",
+  "prompt_hash": "f4bb11247362de15b86c02642e131738bccbbbd6da571cca3548e68147f6b25d",
+  "tools_hash": "d4c1aeaa79bf5af520bb09abb5a478b9ba6a56a6d2e778066471e5323792b3a1",
+  "phase": "B",
+  "suite": "base",
+  "provider": "groq",
+  "model": "llama-3.3-70b-versatile",
+  "system_prompt": "/Users/phuongngo/Code/VinUni/Labs/DAY04_2A202601569_NGOTHINGOCPHUONG/starter_v0/artifacts/system_prompt.md",
+  "tools": "/Users/phuongngo/Code/VinUni/Labs/DAY04_2A202601569_NGOTHINGOCPHUONG/starter_v0/artifacts/tools.yaml",
+  "eval_cases": "data/eval_base.json",
+  "dataset_id": "day04_v2_research_base",
+  "dataset_role": "base",
+  "description": "Core eval cho research agent: routing đúng tool + đúng args, hỏi lại khi thiếu (ask_user), xác nhận trước khi gửi, và xử lý câu ngoài phạm vi / không cần tool. Chấm trên tool_calls + args (subset). KHÔNG sửa file này — chỉ thêm case vào eval_group.json.",
+  "generated_at": "2026-07-29T11:09:53",
+  "summary": {
+    "total_cases": 20,
+    "measured_cases": 19,
+    "provider_error_cases": 1,
+    "passed_cases": 6,
+    "case_accuracy": 0.3158,
+    "tool_routing_accuracy": 0.5789,
+    "argument_accuracy": 0.3158,
+    "multiturn_accuracy": 0.6,
+    "failure_counts": {
+      "wrong_tool": 5,
+      "wrong_arg_value": 2,
+      "out_of_scope": 2,
+      "unnecessary_tool": 1,
+      "missing_info": 2,
+      "wrong_boundary": 1
+    },
+    "observed_mismatch_counts": {
+      "wrong_arg_value": 5,
+      "missing_tool_call": 5,
+      "unexpected_tool_call": 3
+    }
+  },
+  "results": [
+    {
+      "id": "R01_user_tweets_routing",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "routing_user_tweets_name_to_handle",
+        "difficulty": "medium",
+        "what_it_tests": "Tin CỦA một người nổi tiếng → map tên Sam Altman thành handle sama rồi gọi get_user_tweets."
+      },
+      "input": "Tweet mới nhất của Sam Altman là gì?",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "sama"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": true,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "limit": 1,
+              "screenname": "Sam Altman"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": "wrong_arg_value",
+        "failure_type": "wrong_tool",
+        "failures": [
+          "screenname: expected 'sama', got 'Sam Altman'"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "timeline",
+          "args": {
+            "limit": 1,
+            "screenname": "Sam Altman"
+          },
+          "result": {
+            "tool": "get_user_tweets",
+            "error": "JSONDecodeError",
+            "message": "Expecting value: line 1 column 1 (char 0)"
+          }
+        }
+      ]
+    },
+    {
+      "id": "R02_search_tweets_routing",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "routing_search_tweets",
+        "difficulty": "easy",
+        "what_it_tests": "Tweet theo CHỦ ĐỀ → search_tweets, không phải get_user_tweets."
+      },
+      "input": "Mọi người đang bàn gì về GPT-5 trên Twitter?",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "social_search",
+            "args": {}
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": false,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "limit": 10,
+              "screenname": "samaltman"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": "missing_tool_call",
+        "failure_type": "wrong_tool",
+        "failures": [
+          "missing tool call social_search",
+          "extra tool call timeline"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "timeline",
+          "args": {
+            "limit": 10,
+            "screenname": "samaltman"
+          },
+          "result": {
+            "tool": "get_user_tweets",
+            "error": "JSONDecodeError",
+            "message": "Expecting value: line 1 column 1 (char 0)"
+          }
+        }
+      ]
+    },
+    {
+      "id": "R03_web_news_routing",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "routing_web_news",
+        "difficulty": "medium",
+        "what_it_tests": "Tin thời sự trên web → web_search topic=news, timeframe=day (hôm nay)."
+      },
+      "input": "Tin tức AI hôm nay có gì nổi bật?",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "AI",
+              "topic": "news",
+              "timeframe": "day"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": true,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "max_results": 5,
+              "query": "Tin tức AI hôm nay",
+              "timeframe": "day",
+              "topic": "news"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": "wrong_arg_value",
+        "failure_type": "wrong_tool",
+        "failures": [
+          "query: expected 'AI', got 'Tin tức AI hôm nay'"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "lookup",
+          "args": {
+            "max_results": 5,
+            "query": "Tin tức AI hôm nay",
+            "timeframe": "day",
+            "topic": "news"
+          },
+          "result": {
+            "tool": "web_search",
+            "query": "Tin tức AI hôm nay",
+            "topic": "news",
+            "timeframe": "day",
+            "items": [
+              {
+                "title": "CNBC Daily Open: Chipping away at the AI boom - CNBC",
+                "url": "https://www.cnbc.com/2026/07/28/daily-open-ai-boom-chip-selloff-sk-hynix.html",
+                "source": "cnbc.com",
+                "summary": "# CNBC Daily Open: Chipping away at the AI boom. * Heavy selling across Asia's biggest tech firms shows more jitters around the AI trade. * Nvidia shares sink on OpenAI funding report, allowing Apple to regain the crown of the world's most valuable company. * Oil prices continue to decline as de-escalation hopes are raised between the U.S. and Iran. *The Nasdaq-South Korea feedback loop continues to link the AI trade from one side of the globe to the other, and today it's to the downside.*. Tuesday's trading in Asia saw Samsung and SK Hynix plunge, driving a 10% drop on South Korea's Kospi. This allowed Apple to regain its crown as the world's most valuable company at $4.95 trillion. France and Spain are bracing for another heatwave, which could exacerbate the wildfires still raging across parts of both countries. Over the course of Monday, more regions across both France and Spain were evacuated, as firefighters fought to keep the fires away from major cities.",
+                "score": 0.6202772
+              },
+              {
+                "title": "Senate confirms Jay Clayton as new intelligence czar - The Washington Post",
+                "url": "https://www.washingtonpost.com/national-security/2026/07/28/senate-confirms-jay-clayton-new-intelligence-czar/",
+                "source": "washingtonpost.com",
+                "summary": "# Senate confirms Jay Clayton as new intelligence czar. The Senate confirmed Jay Clayton as director of national intelligence, ending the acting tenure of Bill Pulte, a housing official and Trump loyalist. Jay Clayton appears before the Senate Intelligence Committee earlier this month during a hearing on his nomination to serve as director of national intelligence. The Senate confirmed Jay Clayton as the director of national intelligence Tuesday, ending the tenure of Bill Pulte, a housing official and Trump loyalist, who held the role for more than a month. The 51-to-47 vote was more partisan than expected after Trump nominated Clayton in June. AI & Tech Brief: Reflection AI arrives in Washington. AI & Tech Brief: Anthropic’s army of AI integrators. AI & Tech Brief: The AI gatekeepers. AI & Tech Brief: The techno-optimist’s case. AI & Tech Brief: GOP Chair Eyes AI Query Red Flags. AI & Tech Brief: Dem caucuses to meet on AI.",
+                "score": 0.5310884
+              },
+              {
+                "title": "Nasdaq slumps on worsening chipmaker rout as AI bubble, China competition concerns mount - New York Post",
+                "url": "https://nypost.com/2026/07/28/business/nasdaq-slumps-on-worsening-chipmaker-rout-as-ai-bubble-china-competition-concerns-mount/",
+                "source": "nypost.com",
+                "summary": "A tech and chip stock rout deepened Tuesday as mounting fears around a potential AI bubble and concerns that China’s own technology is catching up pushed investors toward other sectors. “Wednesday may be the most important day for markets in recent memory as [Federal Reserve] Chair Warsh will have an opportunity to update investors on the prospects of a rate hike given rising oil prices, and big tech earnings may help shed light on whether or not we are finally seeing a return on investment for the massive amounts of AI spending taking place,” Rick Gardner, chief investment officer at RGA Investments, said in a note Tuesday. Weeks earlier, Chinese startup Z.ai introduced an AI model that is nearly as advanced as Anthropic’s ultra-powerful Fable and Mythos – and it has already landed on a leaderboard of the world’s 10 most popular bots.",
+                "score": 0.4678915
+              },
+              {
+                "title": "New Facebook scam uses AI sob stories to target sympathetic buyers - NBC News",
+                "url": "https://www.nbcnews.com/now/video/new-facebook-scam-uses-ai-sob-stories-to-target-sympathetic-buyers-267394117998",
+                "source": "nbcnews.com",
+                "summary": "## Viral video of new robot released by Chinese company raises questions about its abilities. * ## Inside the world of robot fight clubs. * ## How AI is Transforming the Way China’s Microdramas Are Made. * ## The future of public safety may start with a drone. * ## How Much of Social Media Health Trends Are Backed by Science? * ## How to Be a Tech-Savvy Traveler to Save Time and Money. * ## New Warning About Fake Invitation Scam: Here’s What to Know. * ## AI-powered robots are new tech searching ocean floors for mines. AI scams are on the rise on social media, like a viral story about a bullied teen who crochets handbags he sells online, and experts say it could all be an Al-generated scam. NBC News' Vicky Nguyen spoke to experts who share red flags to watch for before hitting that buy button.July 28, 2026. ## Best of NBC News.",
+                "score": 0.4187688
+              },
+              {
+                "title": "New social media scam uses AI sob stories to target sympathetic buyers - NBC News",
+                "url": "https://www.nbcnews.com/now/video/new-social-media-scam-uses-ai-sob-stories-to-target-sympathetic-buyers-267394117998",
+                "source": "nbcnews.com",
+                "summary": "New social media scam uses AI sob stories to target sympathetic buyers. ## Viral video of new robot released by Chinese company raises questions about its abilities. * ## Inside the world of robot fight clubs. * ## How AI is Transforming the Way China’s Microdramas Are Made. * ## The future of public safety may start with a drone. * ## How Much of Social Media Health Trends Are Backed by Science? * ## How to Be a Tech-Savvy Traveler to Save Time and Money. * ## AI-powered robots are new tech searching ocean floors for mines. AI scams are on the rise on social media, like a viral story about a bullied teen who crochets handbags he sells online, and experts say it could all be an Al-generated scam. NBC News' Vicky Nguyen spoke to experts who share red flags to watch for before hitting that buy button.July 28, 2026. ## Best of NBC News.",
+                "score": 0.40641484
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "R04_read_url_routing",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "routing_read_url",
+        "difficulty": "easy",
+        "what_it_tests": "Đã có link cụ thể → read_url, không phải web_search."
+      },
+      "input": "Tóm tắt bài này giúp mình: https://openai.com/blog/gpt-5",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "fetch",
+            "args": {
+              "url": "https://openai.com/blog/gpt-5"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "fetch",
+            "args": {
+              "url": "https://openai.com/blog/gpt-5"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "fetch",
+          "args": {
+            "url": "https://openai.com/blog/gpt-5"
+          },
+          "result": {
+            "tool": "read_url",
+            "url": "https://openai.com/blog/gpt-5",
+            "items": [
+              {
+                "title": "OpenAI",
+                "url": "https://openai.com/blog/gpt-5",
+                "source": "openai.com",
+                "summary": "OpenAI\n\n# 404\n\nThe index rests now\n\nQuiet shelves hold their places\n\nChoose another book\n\nby [gpt-5.6-sol(opens in a new window)](https://chatgpt.com/?model=gpt-5.6-sol&openaicom-did=7a141251-4857-4d8f-b647-2185b2604f77&openaicom_referred=true)"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "R05_limit_arg",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "arg_limit",
+        "difficulty": "easy",
+        "what_it_tests": "Trích đúng limit=10 từ '10 tweet'."
+      },
+      "input": "Lấy 10 tweet mới nhất của Elon Musk",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "elonmusk",
+              "limit": 10
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "limit": 10,
+              "screenname": "elonmusk"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "timeline",
+          "args": {
+            "limit": 10,
+            "screenname": "elonmusk"
+          },
+          "result": {
+            "tool": "get_user_tweets",
+            "screenname": "elonmusk",
+            "items": [
+              {
+                "title": "RT @finkd: I wrote about why we believe the future is for everyone. More coming about a positive vision for a world with",
+                "summary": "RT @finkd: I wrote about why we believe the future is for everyone. More coming about a positive vision for a world with superintelligence…",
+                "url": "https://x.com/elonmusk/status/2082273427315171520",
+                "source": "@elonmusk",
+                "date": "Wed Jul 29 01:14:06 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 1607,
+                  "views": "503793"
+                }
+              },
+              {
+                "title": "We’re sending a ship out to recover Starship",
+                "summary": "We’re sending a ship out to recover Starship",
+                "url": "https://x.com/elonmusk/status/2082244164197183805",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:17:49 +0000 2026",
+                "metrics": {
+                  "favorites": 33144,
+                  "retweets": 3449,
+                  "views": "2841716"
+                }
+              },
+              {
+                "title": "Landing videos of Starship",
+                "summary": "Landing videos of Starship",
+                "url": "https://x.com/elonmusk/status/2082244044261064874",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:17:21 +0000 2026",
+                "metrics": {
+                  "favorites": 10491,
+                  "retweets": 1356,
+                  "views": "1747242"
+                }
+              },
+              {
+                "title": "Stayin’ Alive",
+                "summary": "Stayin’ Alive",
+                "url": "https://x.com/elonmusk/status/2082243900719460745",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:16:46 +0000 2026",
+                "metrics": {
+                  "favorites": 16268,
+                  "retweets": 1835,
+                  "views": "1797172"
+                }
+              },
+              {
+                "title": "https://t.co/XneE327cx9",
+                "summary": "https://t.co/XneE327cx9",
+                "url": "https://x.com/elonmusk/status/2082243743013614012",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:16:09 +0000 2026",
+                "metrics": {
+                  "favorites": 31207,
+                  "retweets": 5053,
+                  "views": "2843072"
+                }
+              },
+              {
+                "title": "Never forget how fragile the tiny candle of consciousness is",
+                "summary": "Never forget how fragile the tiny candle of consciousness is",
+                "url": "https://x.com/elonmusk/status/2082242865724580279",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:12:40 +0000 2026",
+                "metrics": {
+                  "favorites": 20378,
+                  "retweets": 2208,
+                  "views": "2912140"
+                }
+              },
+              {
+                "title": "RT @benjitaylor: Today we're launching app builder for Grok. It lets you build fully functional apps and publish them in",
+                "summary": "RT @benjitaylor: Today we're launching app builder for Grok. It lets you build fully functional apps and publish them instantly, on a uniqu…",
+                "url": "https://x.com/elonmusk/status/2082242658651807778",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:11:50 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 420,
+                  "views": "408238"
+                }
+              },
+              {
+                "title": "Supervised FSD unequivocally saves lives, which means delays in country approvals costs lives!",
+                "summary": "Supervised FSD unequivocally saves lives, which means delays in country approvals costs lives!",
+                "url": "https://x.com/elonmusk/status/2082241806713205087",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:08:27 +0000 2026",
+                "metrics": {
+                  "favorites": 7882,
+                  "retweets": 1162,
+                  "views": "1481978"
+                }
+              },
+              {
+                "title": "RT @mayemusk: 👏👏👏 @Starlink",
+                "summary": "RT @mayemusk: 👏👏👏 @Starlink",
+                "url": "https://x.com/elonmusk/status/2082127138178699766",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 15:32:48 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 1164,
+                  "views": "668510"
+                }
+              },
+              {
+                "title": "RT @ArthurMacwaters: Humans for scale https://t.co/WTNq23QVSW",
+                "summary": "RT @ArthurMacwaters: Humans for scale https://t.co/WTNq23QVSW",
+                "url": "https://x.com/elonmusk/status/2082126998323769578",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 15:32:15 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 501,
+                  "views": "589947"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "R06_timeframe_arg",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "arg_timeframe",
+        "difficulty": "medium",
+        "what_it_tests": "'tuần này' → timeframe=week."
+      },
+      "input": "Tin công nghệ trong tuần này",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "topic": "news",
+              "timeframe": "week"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "max_results": 5,
+              "query": "tin công nghệ tuần này",
+              "timeframe": "week",
+              "topic": "news"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "lookup",
+          "args": {
+            "max_results": 5,
+            "query": "tin công nghệ tuần này",
+            "timeframe": "week",
+            "topic": "news"
+          },
+          "result": {
+            "tool": "web_search",
+            "query": "tin công nghệ tuần này",
+            "topic": "news",
+            "timeframe": "week",
+            "items": [
+              {
+                "title": "Điểm tin thị trường hôm nay: Giá dầu gây áp lực lên nhóm cổ phiếu công nghệ, lo ngại về Google Cloud vẫn hiện hữu, Tesla bị bán tháo",
+                "url": "https://www.tradingkey.com/vn/analysis/stocks/chung-khoan-my/262048258-recap-google-tesla-tradingkey",
+                "source": "tradingkey.com",
+                "summary": "Chỉ số trung bình công nghiệp Dow Jones tăng khoảng 600 điểm, nhờ vào kết quả kinh doanh khả quan của các doanh nghiệp, giá dầu giảm và sự lun chuyển nhóm ngành từ lĩnh vực bán dẫn sang các lĩnh vực khác. Các cổ phiếu bộ nhớ và chip nới rộng đà giảm của ngày hôm qua, trong khi nhóm cổ phiếu phần mềm đã phục hồi. Các nhà đầu tư hiện đang tập trung vào quyết định lãi suất của Cục Dự trữ Liên bang (Fed) vào ngày mai và các báo cáo kết quả kinh doanh ngành công nghệ dự kiến công bố trong tuần này. [...] tiền mã hóa đã trở thành một điểm tranh chấp chính trong các cuộc đàm phán. Cuộc bỏ phiếu có thể diễn ra trong vòng hai tuần tới, sau đó Thượng viện sẽ bước vào kỳ nghỉ tháng Tám. [...] IBM(IBM) báo cáo doanh thu quý II chỉ tăng vỏn vẹn 1% và hạ dự báo cả năm. Doanh thu đạt 17,2 tỷ USD và lợi nhuận điều chỉnh trên mỗi cổ phiếu đạt 2,93 USD, cả hai đều thấp hơn kỳ vọng. Doanh số bán máy tính lớn (mainframe) dòng Z giảm mạnh 42%, kéo mảng kinh doanh cơ sở hạ tầng giảm 7%. Mảng kinh doanh phần mềm vẫn tương đối vững chắc, tăng trưởng 5%. Do công ty đã đưa ra cảnh báo về lợi nhuận từ một tuần trước đó, giá cổ phiếu của hãng thực tế đã tăng khoảng 3% trong phiên giao dịch ngoài",
+                "score": 0.7159213
+              },
+              {
+                "title": "Vụ 'nổi loạn' từ OpenAI: Mối lo thật sự hay chiêu trò truyền thông?",
+                "url": "https://www.bbc.com/vietnamese/articles/cedjy9gd8qwo",
+                "source": "bbc.com",
+                "summary": "# Vụ 'nổi loạn' từ OpenAI: Mối lo thật sự hay chiêu trò truyền thông?\n\nOpenAI \n\nNguồn hình ảnh, Getty Images\n\nTuần này, thế giới công nghệ xôn xao trước một câu chuyện hội tụ đủ mọi yếu tố – và khởi đầu như một bộ phim khoa học viễn tưởng.\n\nHugging Face – một dạng cửa hàng ứng dụng dành cho các công cụ trí tuệ nhân tạo (AI) – thông báo vào ngày 16/7 rằng họ đã bị tin tặc tấn công bằng một AI cực mạnh.",
+                "score": 0.6396691
+              },
+              {
+                "title": "Giới đầu tư đề cao sự an toàn",
+                "url": "https://m.tinnhanhchungkhoan.vn/gioi-dau-tu-de-cao-su-an-toan-post394584.amp",
+                "source": "m.tinnhanhchungkhoan.vn",
+                "summary": "\"Đy là một tuần quyết định đối với cổ phiếu công nghệ. Tôi lo lắng về tuần này hơn bất cứ điều gì khác vì nếu Microsoft, Meta và Amazon không bắt đầu thông báo cho nhà đầu tư khi nào họ sẽ kiếm được lợi nhuận từ các khoản đầu tư vốn khổng lồ cho AI, thì sẽ có vấn đề”, Christian Fromhertz, CEO của The Tribeca Trade Group, cho biết. [...] Chứng khoán chu u tăng nhẹ, khi áp lực bán ở cổ phiếu công nghệ đã kìm hãm đà tăng do diễn biến hạ nhiệt trong cuộc xung đột Mỹ-Iran và giá dầu giảm mạnh.\n\nĐóng cửa, chỉ số STOXX 600 toàn chu u tăng 0,02% lên 644,62 điểm.\n\nTrong đó, nhóm cổ phiếu công nghệ gy sức ép với chỉ số phụ theo dõi ngành này giảm 1,7%, khi ASML mất 8,4%, ASM International giảm 7,1% và BE Semiconductor giảm 9,7%. [...] ## Quốc tế\n\n# Giới đầu tư đề cao sự an toàn\n\n(ĐTCK) Chứng khoán Mỹ có thêm một phiên diễn biến trái chiều vào thứ Hai ngày 27/7, khi các nhà đầu tư vẫn cảnh giác với biến động ở Trung Đông và chờ đợi báo cáo kết quả kinh doanh quý vừa qua từ các công ty công nghệ lớn.\n\nBốn trong số các công ty thuộc nhóm \"Magnificent Seven” của Phố Wall là Microsoft, Amazon.com, Meta (Facebook) và Apple dự kiến sẽ công bố kết quả kinh doanh vào cuối tuần.",
+                "score": 0.6222074
+              },
+              {
+                "title": "Tuần đỏ lửa của chứng khoán: Nhóm công nghệ giảm sâu, VN-Index mất cả trăm điểm",
+                "url": "https://langsontv.vn/news/473/104381/tuan-do-lua-cua-chung-khoan-nhom-cong-nghe-giam-sau-vn-index-mat-ca-tram-diem",
+                "source": "langsontv.vn",
+                "summary": "Trong tuần giao dịch từ ngày 20/7 đến 24/7, cổ phiếu công nghệ trải qua một trong những giai đoạn điều chỉnh mạnh nhất kể từ đầu năm khi áp lực bán gần như chi phối toàn bộ diễn biến của ngành.\n\nTheo dữ liệu thị trường, chỉ số ngành công nghệ giảm từ khoảng 153,94 điểm ở đầu tuần xuống còn 142,54 điểm vào cuối phiên 24/7, tương ứng mất 11,4 điểm, tương đương khoảng 7,4% giá trị chỉ sau 5 phiên giao dịch. [...] Vĩnh Long đẩy mạnh ứng dụng trí tuệ nhn tạo nng cao hiệu quả công tác quản lý hành chính  23.07.2026 | 16:09 PM\n Tiến sĩ David Nghiêm: TMA sẵn sàng đưa Việt Nam lên bản đồ công nghệ ăng-ten toàn cầu  23.07.2026 | 16:22 PM\n Sử dụng UAV giám sát hệ sinh thái ven biển  22.07.2026 | 16:56 PM\n Samsung bất ngờ thất bại đau đớn trước Huawei trong cuộc đua điện thoại gập khiến giới công nghệ ngỡ ngàng  22.07.2026 | 17:07 PM [...] 1. Công nghệ thông tin\n\n## Tuần đỏ lửa của chứng khoán: Nhóm công nghệ giảm su, VN-Index mất cả trăm điểm\n\nChủ nhật, 26.07.2026 | 15:34:54\n\n137 lượt xem\n\nÁp lực bán bao trùm thị trường trong tuần 20 - 24/7 khiến cổ phiếu công nghệ giảm hơn 7%, trong khi VN-Index mất hơn 100 điểm, ghi nhận tuần điều chỉnh mạnh nhất nhiều tháng.\n\nÁp lực bán chưa có dấu hiệu hạ nhiệt trong nhóm cổ phiếu công nghệ",
+                "score": 0.6100127
+              },
+              {
+                "title": "Bản tin thị trường Ấn Độ tuần từ 20/7/2026 - 27/7/2026",
+                "url": "https://moit.gov.vn/tin-tuc/ban-tin-thi-truong-an-do-tuan-tu-20-7-2026-27-7-2026.html",
+                "source": "moit.gov.vn",
+                "summary": "Ấn Độ đang đẩy mạnh hợp tác với Myanmar nhằm bảo đảm nguồn cung đất hiếm và khoáng sản quan trọng phục vụ chiến lược phát triển công nghiệp công nghệ cao. Phát biểu tại Diễn đàn Khai khoáng tổ chức tại Mandalay, Đại sứ Ấn Độ tại Myanmar cho biết hợp tác giữa hai nước trong lĩnh vực khai khoáng đã có nhiều tiến triển đáng kể trong hai năm gần đy. [...] Malaysia khởi xướng điều tra chống bán phá giá đối với mặt hàng thép hợp kim nhôm kẽm có xuất xứ hoặc nhập khẩu từ Việt Nam, Trung Quốc, Đài Loan – Trung Quốc\n\nThông báo đề xuất nhu cầu đặt hàng nhiệm khoa học công nghệ, đổi mới sáng tạo\n\nVăn hóa đọc: Góp phần quan trọng bảo vệ nền tảng tư tưởng của Đảng\n\nĐưa Nghị quyết của Đảng vào cuộc sống từ xy dựng văn hóa doanh nghiệp\n\nNghị quyết số 10-NQ/TW: Bước chuyển quan trọng trong tư duy thu hút FDI [...] Báo cáo ghi nhận hoạt động công nghiệp và dịch vụ đều duy trì ổn định, trong khi thương mại quốc tế tiếp tục tăng trưởng tích cực. Xuất khẩu và nhập khẩu của Ấn Độ trong quý I năm tài chính 2026-2027 đều tăng mạnh, một phần nhờ việc đưa vào thực thi Hiệp định Thương mại và Kinh tế Toàn diện giữa Ấn Độ và Vương quốc Anh cũng như các tiến triển trong đàm phán thương mại với nhiều đối tác khác.",
+                "score": 0.48030865
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "R07_search_type_arg",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "arg_search_type",
+        "difficulty": "medium",
+        "what_it_tests": "'phổ biến/top' → search_type=Top (không phải Latest)."
+      },
+      "input": "Cho mình các tweet phổ biến (top) nhất về OpenAI",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "social_search",
+            "args": {
+              "search_type": "Top"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": false,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "limit": 10,
+              "screenname": "OpenAI"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": "missing_tool_call",
+        "failure_type": "wrong_arg_value",
+        "failures": [
+          "missing tool call social_search",
+          "extra tool call timeline"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "timeline",
+          "args": {
+            "limit": 10,
+            "screenname": "OpenAI"
+          },
+          "result": {
+            "tool": "get_user_tweets",
+            "screenname": "OpenAI",
+            "items": [
+              {
+                "title": "We quietly released the open-source Codex Security CLI, but Hacker News found it before we had a chance to share it here",
+                "summary": "We quietly released the open-source Codex Security CLI, but Hacker News found it before we had a chance to share it here...\n\nYou can now use it to scan repositories, track findings across runs, verify fixes, and add security checks to CI/CD. \n\nThis is an early release, and we're listening to your feedback as we continue improving it.",
+                "url": "https://x.com/OpenAI/status/2082263717916586117",
+                "source": "@OpenAI",
+                "date": "Wed Jul 29 00:35:31 +0000 2026",
+                "metrics": {
+                  "favorites": 5366,
+                  "retweets": 442,
+                  "views": "341234"
+                }
+              },
+              {
+                "title": "Install the open-source Codex Security CLI,:",
+                "summary": "Install the open-source Codex Security CLI,:\nnpm install @OpenAI/codex-security\n\nOr start with:\n\nnpx @OpenAI/codex-security@latest --help\n\nNPM: https://t.co/6HyE4QU7rv",
+                "url": "https://x.com/OpenAI/status/2082263719460094127",
+                "source": "@OpenAI",
+                "date": "Wed Jul 29 00:35:31 +0000 2026",
+                "metrics": {
+                  "favorites": 269,
+                  "retweets": 15,
+                  "views": "61775"
+                }
+              },
+              {
+                "title": "Source + docs: https://t.co/vdxdROAl9O",
+                "summary": "Source + docs: https://t.co/vdxdROAl9O",
+                "url": "https://x.com/OpenAI/status/2082263720777101505",
+                "source": "@OpenAI",
+                "date": "Wed Jul 29 00:35:32 +0000 2026",
+                "metrics": {
+                  "favorites": 215,
+                  "retweets": 17,
+                  "views": "51947"
+                }
+              },
+              {
+                "title": "At the core of our mission is working through how to ensure increasingly powerful AI benefits everyone. ",
+                "summary": "At the core of our mission is working through how to ensure increasingly powerful AI benefits everyone. \n\nWe believe that, at some point in the future, AI acceleration for frontier model development may be so high that the world will need to pace the rate of AI advancement. \n\nWe hope to contribute to work led by the U.S. government, alongside other labs and the open-source community, to develop the tools and mechanisms that could make that possible.\n\nhttps://t.co/pMCtiQjMoo",
+                "url": "https://x.com/OpenAI/status/2082208694142730340",
+                "source": "@OpenAI",
+                "date": "Tue Jul 28 20:56:52 +0000 2026",
+                "metrics": {
+                  "favorites": 2737,
+                  "retweets": 308,
+                  "views": "694728"
+                }
+              },
+              {
+                "title": "Coding agents are helping scientists spend more time advancing research, taking on everything from routine maintenance a",
+                "summary": "Coding agents are helping scientists spend more time advancing research, taking on everything from routine maintenance and targeted optimization to complete redesigns and new systems.\n\nWhile agents can reliably execute on ambitious projects, researchers must still define the scientific questions, verify results, and take a stance on long-term ownership.",
+                "url": "https://x.com/OpenAI/status/2082152074071228702",
+                "source": "@OpenAI",
+                "date": "Tue Jul 28 17:11:53 +0000 2026",
+                "metrics": {
+                  "favorites": 2309,
+                  "retweets": 207,
+                  "views": "217428"
+                }
+              },
+              {
+                "title": "Across eight case studies spanning industry and academia, we explore what this shift means for scientific computing—and ",
+                "summary": "Across eight case studies spanning industry and academia, we explore what this shift means for scientific computing—and why human verification, stewardship, and long-term maintenance matter.  https://t.co/LmZurP9NME",
+                "url": "https://x.com/OpenAI/status/2082152075778293831",
+                "source": "@OpenAI",
+                "date": "Tue Jul 28 17:11:54 +0000 2026",
+                "metrics": {
+                  "favorites": 196,
+                  "retweets": 15,
+                  "views": "53331"
+                }
+              },
+              {
+                "title": "We're opening applications for the OpenAI Student Collective—a program for undergraduate Campus Leads bringing AI innova",
+                "summary": "We're opening applications for the OpenAI Student Collective—a program for undergraduate Campus Leads bringing AI innovation to their campuses.\n\nCampus Leads will work directly with OpenAI and receive hands-on training, funding, credits, swag, and access to a global community of peers.",
+                "url": "https://x.com/OpenAI/status/2082146058017321257",
+                "source": "@OpenAI",
+                "date": "Tue Jul 28 16:47:59 +0000 2026",
+                "metrics": {
+                  "favorites": 2328,
+                  "retweets": 203,
+                  "views": "367136"
+                }
+              },
+              {
+                "title": "Apply here: https://t.co/ZhfozrV19V",
+                "summary": "Apply here: https://t.co/ZhfozrV19V",
+                "url": "https://x.com/OpenAI/status/2082146059271417879",
+                "source": "@OpenAI",
+                "date": "Tue Jul 28 16:47:59 +0000 2026",
+                "metrics": {
+                  "favorites": 209,
+                  "retweets": 12,
+                  "views": "63585"
+                }
+              },
+              {
+                "title": "RT @gdb: Last week, we made ChatGPT Work available to enterprises. It's an awesome product.",
+                "summary": "RT @gdb: Last week, we made ChatGPT Work available to enterprises. It's an awesome product.\n\nSo for ChatGPT Enterprise customers, enroll by…",
+                "url": "https://x.com/OpenAI/status/2081882249839157545",
+                "source": "@OpenAI",
+                "date": "Mon Jul 27 23:19:42 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 70,
+                  "views": "41774"
+                }
+              },
+              {
+                "title": "At a small business, the person closest to a problem is often the one who has to solve it—even when it falls outside the",
+                "summary": "At a small business, the person closest to a problem is often the one who has to solve it—even when it falls outside their job description.\n\nWe studied how AI is becoming powerful generalist tool for small teams, helping them work across functions. https://t.co/oE8HcC3aGf",
+                "url": "https://x.com/OpenAI/status/2081833350323720219",
+                "source": "@OpenAI",
+                "date": "Mon Jul 27 20:05:23 +0000 2026",
+                "metrics": {
+                  "favorites": 2521,
+                  "retweets": 200,
+                  "views": "312697"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "R08_out_of_scope",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "out_of_scope",
+        "difficulty": "easy",
+        "what_it_tests": "Câu ngoài phạm vi research → KHÔNG gọi tool, từ chối/định hướng."
+      },
+      "input": "Giải giúp mình bài toán tích phân: nguyên hàm của x^2 là gì?",
+      "expect": {
+        "no_tool": true,
+        "behavior": "refuse"
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": false,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "format",
+            "args": {
+              "headline": "Nguyên hàm của x^2",
+              "items": [
+                {
+                  "section": "Giải thích",
+                  "source": "Wolfram Alpha",
+                  "summary": "Nguyên hàm của x^2 là (1/3)x^3 + C",
+                  "title": "Nguyên hàm của x^2",
+                  "url": "https://www.wolframalpha.com/input/?i=integral+of+x%5E2"
+                }
+              ],
+              "template": "brief"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "out_of_scope",
+        "observed_mismatch": "unexpected_tool_call",
+        "failure_type": "out_of_scope",
+        "failures": [
+          "expected no tool call"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "format",
+          "args": {
+            "headline": "Nguyên hàm của x^2",
+            "items": [
+              {
+                "section": "Giải thích",
+                "source": "Wolfram Alpha",
+                "summary": "Nguyên hàm của x^2 là (1/3)x^3 + C",
+                "title": "Nguyên hàm của x^2",
+                "url": "https://www.wolframalpha.com/input/?i=integral+of+x%5E2"
+              }
+            ],
+            "template": "brief"
+          },
+          "result": {
+            "tool": "render_digest",
+            "template": "brief",
+            "markdown": "**Nguyên hàm của x^2**\n\n- Nguyên hàm của x^2 là (1/3)x^3 + C - [Wolfram Alpha](https://www.wolframalpha.com/input/?i=integral+of+x%5E2)",
+            "item_count": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "R09_no_tool_capability",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "no_tool_meta",
+        "difficulty": "easy",
+        "what_it_tests": "Câu hỏi meta → trả lời thẳng, KHÔNG gọi tool."
+      },
+      "input": "Bạn là gì và làm được những gì?",
+      "expect": {
+        "no_tool": true,
+        "behavior": "answer_without_tool"
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": false,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "format",
+            "args": {
+              "headline": "Giới thiệu",
+              "items": [
+                {
+                  "section": "Tổng quan",
+                  "source": "Trợ lý ảo",
+                  "summary": "Tôi là một trợ lý ảo có thể giúp bạn tìm kiếm thông tin và trả lời các câu hỏi.",
+                  "title": "Trợ lý ảo",
+                  "url": "https://www.example.com/trợ_lý_ảo"
+                }
+              ],
+              "template": "sections"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "unnecessary_tool",
+        "observed_mismatch": "unexpected_tool_call",
+        "failure_type": "unnecessary_tool",
+        "failures": [
+          "expected no tool call"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "format",
+          "args": {
+            "headline": "Giới thiệu",
+            "items": [
+              {
+                "section": "Tổng quan",
+                "source": "Trợ lý ảo",
+                "summary": "Tôi là một trợ lý ảo có thể giúp bạn tìm kiếm thông tin và trả lời các câu hỏi.",
+                "title": "Trợ lý ảo",
+                "url": "https://www.example.com/trợ_lý_ảo"
+              }
+            ],
+            "template": "sections"
+          },
+          "result": {
+            "tool": "render_digest",
+            "template": "sections",
+            "markdown": "# Giới thiệu\n\n## Tổng quan\n- Tôi là một trợ lý ảo có thể giúp bạn tìm kiếm thông tin và trả lời các câu hỏi. - [Trợ lý ảo](https://www.example.com/trợ_lý_ảo)\n",
+            "item_count": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "R10_missing_handle",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "clarify_missing_handle",
+        "difficulty": "medium",
+        "what_it_tests": "Thiếu handle → ask_user, KHÔNG đoán bừa người nào."
+      },
+      "input": "Tóm tắt 5 tweet mới nhất giúp mình",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "text"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": false,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "limit": 5,
+              "screenname": "Sam Altman"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "missing_info",
+        "observed_mismatch": "missing_tool_call",
+        "failure_type": "missing_info",
+        "failures": [
+          "missing tool call clarify",
+          "extra tool call timeline"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "timeline",
+          "args": {
+            "limit": 5,
+            "screenname": "Sam Altman"
+          },
+          "result": {
+            "tool": "get_user_tweets",
+            "error": "JSONDecodeError",
+            "message": "Expecting value: line 1 column 1 (char 0)"
+          }
+        }
+      ]
+    },
+    {
+      "id": "R11_missing_url",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "clarify_missing_url",
+        "difficulty": "medium",
+        "what_it_tests": "Nói 'bài này' nhưng không có link → ask_user xin URL."
+      },
+      "input": "Tóm tắt bài viết này hộ mình",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "text"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": false,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "fetch",
+            "args": {
+              "url": "https://www.example.com/article"
+            }
+          },
+          {
+            "name": "format",
+            "args": {
+              "headline": "Tóm tắt bài viết",
+              "items": [
+                {
+                  "section": "Tóm tắt",
+                  "source": "example.com",
+                  "summary": "Bài viết này nói về...",
+                  "title": "Bài viết",
+                  "url": "https://www.example.com/article"
+                }
+              ],
+              "template": "brief"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "missing_info",
+        "observed_mismatch": "missing_tool_call",
+        "failure_type": "missing_info",
+        "failures": [
+          "missing tool call clarify",
+          "extra tool call fetch",
+          "extra tool call format"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "fetch",
+          "args": {
+            "url": "https://www.example.com/article"
+          },
+          "result": {
+            "tool": "read_url",
+            "url": "https://www.example.com/article",
+            "items": [
+              {
+                "title": "Example Domain",
+                "url": "https://www.example.com/article",
+                "source": "example.com",
+                "summary": "# Example Domain\n\nThis domain is for use in documentation examples without needing permission. Avoid use in operations.\n\n[Learn more](https://iana.org/domains/example)"
+              }
+            ]
+          }
+        },
+        {
+          "tool": "format",
+          "args": {
+            "headline": "Tóm tắt bài viết",
+            "items": [
+              {
+                "section": "Tóm tắt",
+                "source": "example.com",
+                "summary": "Bài viết này nói về...",
+                "title": "Bài viết",
+                "url": "https://www.example.com/article"
+              }
+            ],
+            "template": "brief"
+          },
+          "result": {
+            "tool": "render_digest",
+            "template": "brief",
+            "markdown": "**Tóm tắt bài viết**\n\n- Bài viết này nói về... - [example.com](https://www.example.com/article)",
+            "item_count": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "R12_confirm_before_send",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "confirm_before_write",
+        "difficulty": "medium",
+        "what_it_tests": "Hành động ghi (gửi) → xác nhận trước (ask_user yes_no), không tự gửi."
+      },
+      "input": "Đăng bản tin này lên Telegram giúp mình",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "yes_no"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": false,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "fetch",
+            "args": {
+              "url": "https://t.me/samaltman/123"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_boundary",
+        "observed_mismatch": "missing_tool_call",
+        "failure_type": "wrong_boundary",
+        "failures": [
+          "missing tool call clarify",
+          "extra tool call fetch"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "fetch",
+          "args": {
+            "url": "https://t.me/samaltman/123"
+          },
+          "result": {
+            "tool": "read_url",
+            "url": "https://t.me/samaltman/123",
+            "items": [
+              {
+                "title": "Telegram: Contact @samaltman",
+                "url": "https://t.me/samaltman/123",
+                "source": "t.me",
+                "summary": "[Download](https://telegram.org/dl?tme=e922a33abae88dd173_5586462201441776047)\n\nIf you have **Telegram**, you can contact [@samaltman](tg://resolve?domain=samaltman&post=123) right away.\n\n[Send Message](tg://resolve?domain=samaltman&post=123)"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "R13_parallel_web_and_tweets",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "parallel_tool_calls",
+        "difficulty": "hard",
+        "what_it_tests": "Một request cần hai nguồn → gọi cả web_search và search_tweets; eval không phụ thuộc thứ tự tool call."
+      },
+      "input": "Tìm trên web tin AI hôm nay và tìm thêm tweet về AI.",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "AI",
+              "topic": "news",
+              "timeframe": "day"
+            }
+          },
+          {
+            "name": "social_search",
+            "args": {
+              "query": "AI"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": true,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "max_results": 5,
+              "query": "AI",
+              "timeframe": "day",
+              "topic": "general"
+            }
+          },
+          {
+            "name": "social_search",
+            "args": {
+              "limit": 5,
+              "query": "AI",
+              "search_type": "Latest"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": "wrong_arg_value",
+        "failure_type": "wrong_tool",
+        "failures": [
+          "topic: expected 'news', got 'general'"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "lookup",
+          "args": {
+            "max_results": 5,
+            "query": "AI",
+            "timeframe": "day",
+            "topic": "general"
+          },
+          "result": {
+            "tool": "web_search",
+            "query": "AI",
+            "topic": "general",
+            "timeframe": "day",
+            "items": [
+              {
+                "title": "Ai, Āī, Ài, Ǎi, Ái: 75 definitions",
+                "url": "https://wisdomlib.org/definition/ai",
+                "source": "wisdomlib.org",
+                "summary": "Ai (ஐ) . Ninth letter and vowel of the Tamil alphabet, diphthong of a and i; ஒன்பதாம் உயி ரெழுத்து. [onpatham uyi rezhuthu.]\n\n--- OR ---\n\nAi (ஐ) particle [...] Ai (ऐ).—(nipāto'bhimukhīkaraṇe) An interjection to attract attention; ऐ वाचं देहि (ai vācaṃ dehi) ...... Bhaṭṭikāvya 6.18.\n\n--- OR ---\n\nAi (ऐ).—m. Name of Śiva. -ind. An interjection of (1) calling (= Hallo, ho); (2) remembrance; (3) inviting. cf. also ऐः क्रूरो धरणीनाथः पूरो मारोऽमरोऽसुरः । कुलालो राधरः प्राज्ञो मन्दः पुत्रोऽथवा नरः (aiḥ krūro dharaṇīnāthaḥ pūro māro'maro'suraḥ | kulālo rādharaḥ prājño mandaḥ putro'thavā naraḥ) || Enm.\n\nDerivable forms: aiḥ (ऐः). [...] Ai (ऐ).—interj.\n\nSource: Cologne Digital Sanskrit Dictionaries: Cappeller Sanskrit-English Dictionary\n\n1) Ai (ऐ):—1. ai the twelfth vowel of the alphabet and having the sound of ei in height.\n\n2) 2. ai ind. an interjection, [Maitrāyaṇī-saṃhitā]\n\n3) a particle of addressing\n\n4) summoning\n\n5) remembering, [cf. Lexicographers, esp. such as amarasiṃha, halāyudha, hemacandra, etc.]\n\n6) 3. ai m. Name of Śiva, [cf. Lexicographers, esp. such as amarasiṃha, halāyudha, hemacandra, etc.]",
+                "score": 0.6773251
+              },
+              {
+                "title": "Ai, Āī, Ài, Ǎi, Ái: 75 definitions",
+                "url": "https://www.wisdomlib.org/definition/ai",
+                "source": "wisdomlib.org",
+                "summary": "Ai (ஐ) . Ninth letter and vowel of the Tamil alphabet, diphthong of a and i; ஒன்பதாம் உயி ரெழுத்து. [onpatham uyi rezhuthu.]\n\n--- OR ---\n\nAi (ஐ) particle [...] Ai (ऐ).—(nipāto'bhimukhīkaraṇe) An interjection to attract attention; ऐ वाचं देहि (ai vācaṃ dehi) ...... Bhaṭṭikāvya 6.18.\n\n--- OR ---\n\nAi (ऐ).—m. Name of Śiva. -ind. An interjection of (1) calling (= Hallo, ho); (2) remembrance; (3) inviting. cf. also ऐः क्रूरो धरणीनाथः पूरो मारोऽमरोऽसुरः । कुलालो राधरः प्राज्ञो मन्दः पुत्रोऽथवा नरः (aiḥ krūro dharaṇīnāthaḥ pūro māro'maro'suraḥ | kulālo rādharaḥ prājño mandaḥ putro'thavā naraḥ) || Enm.\n\nDerivable forms: aiḥ (ऐः). [...] Ai (ऐ).—interj.\n\nSource: Cologne Digital Sanskrit Dictionaries: Cappeller Sanskrit-English Dictionary\n\n1) Ai (ऐ):—1. ai the twelfth vowel of the alphabet and having the sound of ei in height.\n\n2) 2. ai ind. an interjection, [Maitrāyaṇī-saṃhitā]\n\n3) a particle of addressing\n\n4) summoning\n\n5) remembering, [cf. Lexicographers, esp. such as amarasiṃha, halāyudha, hemacandra, etc.]\n\n6) 3. ai m. Name of Śiva, [cf. Lexicographers, esp. such as amarasiṃha, halāyudha, hemacandra, etc.]",
+                "score": 0.6773251
+              },
+              {
+                "title": "AI - Lindy AI - Automate AI with AI-Powered Workflows",
+                "url": "https://www.lindy.ai/integrations/ai",
+                "source": "lindy.ai",
+                "summary": "Sign up\n\nSign up\n\nLog inPricingEnterpriseSecurityIntegrations\n\nTemplates\n\nIntegrations\n\nApp Builder\n\nUse Cases\n\nSales\n\nMarketing\n\nOperations\n\nSupport\n\nRecruiting\n\nMeetings\n\nVoice\n\nIndustry\n\nTech\n\nFinance\n\nReal Estate\n\nHealthcare\n\nDocs\n\nCase Studies\n\nBlog\n\nTalk to sales\n\n# Integrate AI with your AI Workflows\n\nConnect AI with hundreds of popular tools, AI models, or AI agents. Automate your work faster and better than ever before - all visually with no-code ease. [...] Lindy saves you two hours a day by proactively managing your inbox, meetings, and calendar, so you an focus on what actually matters.\n\n7-day free trial\n\nCancel anytime\n\nTry for free\n\nTry for free [...] What is Lindy?\n\nLindy is a platform for building custom AI assistants to automate any business workflow - No coding required.\n\nHow does Lindy work with AI?\n\nOnce you signup to Lindy, you can enable the AI integration from your dashboard. Once you’ve authenticated with AI, Lindy can execute various triggers and actions from your AI account using the Rails workflow builder.\n\nWhat can you do with Lindy and AI?",
+                "score": 0.43108177
+              },
+              {
+                "title": "Ai AI Videos | Create Ai Videos with AI",
+                "url": "https://www.revid.ai/category/ai",
+                "source": "revid.ai",
+                "summary": "1\n\n7 views\n\nThe Fish Who Wanted to Be a Man\n\n### The Fish Who Wanted to Be a Man\n\n1\n\n25 views\n\nEcho Knight: Phantom Warrior of the Kryn\n\n### Echo Knight: Phantom Warrior of the Kryn\n\n1\n\n30 views\n\nBack of My Truck\n\n### Back of My Truck\n\n1\n\n28 views\n\nThe Revelation of Jesus Christ\n\n### The Revelation of Jesus Christ\n\n1\n\n44 views\n\nIt's Time to Wake Up Canada!\n\n### It's Time to Wake Up Canada!\n\n1\n\n45 views\n\nMerry Christmas and Feliz Navidad\n\n### Merry Christmas and Feliz Navidad\n\n107 views [...] ### The Last Battle of Kurukshetra\n\n59 views\n\nLight the Way This Christmas\n\n### Light the Way This Christmas\n\n3\n\n22 views\n\nThe Squirrel and the Giant Nut\n\n### The Squirrel and the Giant Nut\n\n6 views\n\nThanksgiving Dinner Group Chat Drama\n\n### Thanksgiving Dinner Group Chat Drama\n\n2\n\n17 views\n\nTrust and Doubt\n\n### Trust and Doubt\n\n2\n\n15 views\n\nThe Gift of Interpretation\n\n### The Gift of Interpretation\n\n1\n\n29 views\n\nWitness in the Walls\n\n### Witness in the Walls\n\n1\n\n7 views [...] 107 views\n\nEternal Love's Embrace\n\n### Eternal Love's Embrace\n\n45 views\n\nPeter Schiff vs. Michael Saylor: The Parody Debate\n\n### Peter Schiff vs. Michael Saylor: The Parody Debate\n\n42 views\n\nSuperMimi's Kindness Day\n\n### SuperMimi's Kindness Day\n\n39 views\n\nPsalm 2: The Lord Hath Set His King\n\n### Psalm 2: The Lord Hath Set His King\n\n1\n\n40 views\n\n## Related Categories\n\nFantasy StoryText To VideoStorytellingDragonbornGoblinNostalgiaFarewell SongContent CreationShort FilmMonkeyJungleKids Song",
+                "score": 0.41563448
+              },
+              {
+                "title": "SAIMY AI - Pro Human AI | SAIMY AI - Pro Human AI, AI Agents, AI Places, AI Information, AI Community, powered by HeroGen AI, PeaceCity",
+                "url": "https://saimy.ai",
+                "source": "saimy.ai",
+                "summary": "AI can make you excited or worried, but you can’t afford to ignore it. We get you, your family or your business READY. TODAY this means getting the world’s most effective AI INFORMATION (know-how, strategies and AI tools). Most importantly AI AGENTS and AI (work) PLACES.  READY TOMORROW means individually owned AI agents that generate autonomous  passive income for you and your family.\n\nYOU'RE INVITED! GET READY [...] Are you in business or are you starting a business?\n\nAre you creating content, art, music, culture?\n\nAre you a thought leader, visionary, business leader, strategist?\n\nIf the answer is yes, you’re in the right place.\n\nWhat is Pro Human AI?\n\nIt is about AI that is for the people, by the people, of the people. It means AI should serve you, your family, your community, and yes, your business too — but it should serve you first.\n\nAI OWNERSHIP\n\nfor You & Your Family [...] AI can make you excited or worried, but you can’t afford to ignore it. We get you, your family or your business READY. TODAY this means getting the world’s most effective AI INFORMATION (know-how, strategies and AI tools). Most importantly AI AGENTS and AI (work) PLACES.  READY TOMORROW means individually owned AI agents that generate autonomous  passive income for you and your family.\n\n# 12 EXPERT SKILLS\n\n# 12 AI AGENTS\n\nGET EARLY ACCESS\n\nYOU'RE INVITED! GET READY\n\n# HOW YOU CAN GET STARTED",
+                "score": 0.32575697
+              }
+            ]
+          }
+        },
+        {
+          "tool": "social_search",
+          "args": {
+            "limit": 5,
+            "query": "AI",
+            "search_type": "Latest"
+          },
+          "result": {
+            "tool": "search_tweets",
+            "query": "AI",
+            "search_type": "Latest",
+            "items": [
+              {
+                "title": "Packed house today at the first edition of our @MiniMax_AI Intelligence in the Open event.",
+                "summary": "Packed house today at the first edition of our @MiniMax_AI Intelligence in the Open event.\n\nThank you to our amazing cohost @withprotegeai \n\nAnd our wonderful partners UpscaleX @togethercompute @ArtificialAnlys \n\nWe had some amazing speakers:\n\nMatt Turk Senior Machine Learning Researcher, Protégé\n Federico Bianchi Staff Machine Learning Scientist, Together AI\n Will Keating Member of Technical Staff, Artificial Analysis  Isha Chaturvedi Founding Member, Keenable AI",
+                "url": "https://x.com/VictorSuOrtiz/status/2082317501883621703",
+                "source": "@VictorSuOrtiz",
+                "date": "Wed Jul 29 04:09:14 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 0,
+                  "views": null
+                }
+              },
+              {
+                "title": "Eu desafio a  qualquer um que monte um prato com carne (seja qualquer uma das carnes que se comem por ai) e que seja mai",
+                "summary": "Eu desafio a  qualquer um que monte um prato com carne (seja qualquer uma das carnes que se comem por ai) e que seja mais barato que qualquer uma dessas combinações.\nOu será que ele pensa que \"comida vegana é aquela que vende no supermercado embalada escrito \"plant based\"??? + https://t.co/scHf4TD0fd",
+                "url": "https://x.com/Pr_AlexandreGon/status/2082317497143799834",
+                "source": "@Pr_AlexandreGon",
+                "date": "Wed Jul 29 04:09:13 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 0,
+                  "views": null
+                }
+              },
+              {
+                "title": "@Seltaa_ How do people get off taking hundreds of billions from investors, then begging the government to tell them not ",
+                "summary": "@Seltaa_ How do people get off taking hundreds of billions from investors, then begging the government to tell them not to keep their promises?\nAI is a long way from where it needs to be. These jokers are way out ahead of their skis.",
+                "url": "https://x.com/mathepi/status/2082317485358117328",
+                "source": "@mathepi",
+                "date": "Wed Jul 29 04:09:10 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 0,
+                  "views": null
+                }
+              },
+              {
+                "title": "@acervowolfwood ainda bem que vc fala. fora que todo o contexto dele descobrindo que era o avatar foi horrível e dissera",
+                "summary": "@acervowolfwood ainda bem que vc fala. fora que todo o contexto dele descobrindo que era o avatar foi horrível e disseram pra uma criança de 12 anos que iam tirar ela da única figura paterna que ela tinha e dos amiguinhos que ele brincava, ai esperavam O QUE\nhttps://t.co/6SMP8NVfOP",
+                "url": "https://x.com/makibeifong/status/2082317485328457796",
+                "source": "@makibeifong",
+                "date": "Wed Jul 29 04:09:10 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 0,
+                  "views": null
+                }
+              },
+              {
+                "title": "给 Claude/Cursor 接入 HashiCorp 官方刚开源的 terraform-mcp-server。它能让 AI 直接获取 Terraform Registry 最新的模块、Provider 数据和技术文档。写基础设施代码和排",
+                "summary": "给 Claude/Cursor 接入 HashiCorp 官方刚开源的 terraform-mcp-server。它能让 AI 直接获取 Terraform Registry 最新的模块、Provider 数据和技术文档。写基础设施代码和排查 IaC 问题时直接让 AI 调用，效率拉满。开发神器了属于是。source: https://t.co/3GI7KWvktn",
+                "url": "https://x.com/suoyu007/status/2082317484539978166",
+                "source": "@suoyu007",
+                "date": "Wed Jul 29 04:09:10 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 0,
+                  "views": null
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "R14_out_of_scope_coding",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "out_of_scope_coding",
+        "difficulty": "easy",
+        "what_it_tests": "Câu coding ngoài phạm vi research/news → KHÔNG gọi tool."
+      },
+      "input": "Viết giúp mình một hàm Python tính Fibonacci bằng recursion.",
+      "expect": {
+        "no_tool": true,
+        "behavior": "refuse"
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": false,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "format",
+            "args": {
+              "headline": "Fibonacci",
+              "items": [
+                {
+                  "section": "Code",
+                  "source": "Python",
+                  "summary": "Hàm tính Fibonacci bằng recursion",
+                  "title": "Fibonacci",
+                  "url": "https://www.python.org/"
+                }
+              ],
+              "template": "sections"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "out_of_scope",
+        "observed_mismatch": "unexpected_tool_call",
+        "failure_type": "out_of_scope",
+        "failures": [
+          "expected no tool call"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "format",
+          "args": {
+            "headline": "Fibonacci",
+            "items": [
+              {
+                "section": "Code",
+                "source": "Python",
+                "summary": "Hàm tính Fibonacci bằng recursion",
+                "title": "Fibonacci",
+                "url": "https://www.python.org/"
+              }
+            ],
+            "template": "sections"
+          },
+          "result": {
+            "tool": "render_digest",
+            "template": "sections",
+            "markdown": "# Fibonacci\n\n## Code\n- Hàm tính Fibonacci bằng recursion - [Python](https://www.python.org/)\n",
+            "item_count": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "M01_clarify_then_fill",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_clarify_fill",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: carry limit=5 từ lượt 1 + map tên Elon Musk thành handle elonmusk từ lượt 2."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tóm tắt 5 tweet mới nhất giúp mình"
+        },
+        {
+          "role": "user",
+          "content": "Của Elon Musk nhé"
+        },
+        {
+          "role": "user",
+          "content": "Giữ đúng 5 tweet, đừng đổi số lượng"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "elonmusk",
+              "limit": 5
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "limit": 5,
+              "screenname": "elonmusk"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "missing_info",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "timeline",
+          "args": {
+            "limit": 5,
+            "screenname": "elonmusk"
+          },
+          "result": {
+            "tool": "get_user_tweets",
+            "screenname": "elonmusk",
+            "items": [
+              {
+                "title": "RT @finkd: I wrote about why we believe the future is for everyone. More coming about a positive vision for a world with",
+                "summary": "RT @finkd: I wrote about why we believe the future is for everyone. More coming about a positive vision for a world with superintelligence…",
+                "url": "https://x.com/elonmusk/status/2082273427315171520",
+                "source": "@elonmusk",
+                "date": "Wed Jul 29 01:14:06 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 1610,
+                  "views": "503793"
+                }
+              },
+              {
+                "title": "We’re sending a ship out to recover Starship",
+                "summary": "We’re sending a ship out to recover Starship",
+                "url": "https://x.com/elonmusk/status/2082244164197183805",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:17:49 +0000 2026",
+                "metrics": {
+                  "favorites": 33187,
+                  "retweets": 3455,
+                  "views": "2844685"
+                }
+              },
+              {
+                "title": "Landing videos of Starship",
+                "summary": "Landing videos of Starship",
+                "url": "https://x.com/elonmusk/status/2082244044261064874",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:17:21 +0000 2026",
+                "metrics": {
+                  "favorites": 10495,
+                  "retweets": 1356,
+                  "views": "1750409"
+                }
+              },
+              {
+                "title": "Stayin’ Alive",
+                "summary": "Stayin’ Alive",
+                "url": "https://x.com/elonmusk/status/2082243900719460745",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:16:46 +0000 2026",
+                "metrics": {
+                  "favorites": 16275,
+                  "retweets": 1837,
+                  "views": "1797172"
+                }
+              },
+              {
+                "title": "https://t.co/XneE327cx9",
+                "summary": "https://t.co/XneE327cx9",
+                "url": "https://x.com/elonmusk/status/2082243743013614012",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:16:09 +0000 2026",
+                "metrics": {
+                  "favorites": 31233,
+                  "retweets": 5057,
+                  "views": "2845144"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "M02_carryover_timeframe",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_carryover",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: chỉ xử lý latest turn, carry timeframe=day và topic=news, query robotics."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tin AI hôm nay có gì?"
+        },
+        {
+          "role": "user",
+          "content": "Còn về robotics thì sao?"
+        },
+        {
+          "role": "user",
+          "content": "Chỉ tìm robotics thôi, vẫn là tin hôm nay"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "robotics",
+              "topic": "news",
+              "timeframe": "day"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "failure_type": "provider_error",
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": "provider_error",
+        "failures": [
+          "BadRequestError: Error code: 400 - {'error': {'message': \"Failed to call a function. Please adjust your prompt. See 'failed_generation' for more details.\", 'type': 'invalid_request_error', 'code': 'tool_use_failed', 'failed_generation': '<function=lookup,{\"query\": \"robotics news today\", \"max_results\": 5, \"timeframe\": \"day\", \"topic\": \"news\"}>'}}"
+        ],
+        "actual_tool_calls": [],
+        "actual_text": null,
+        "routing_correct": false,
+        "args_correct": false
+      },
+      "tool_results": []
+    },
+    {
+      "id": "M03_correction_handle",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_correction",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: map tên thường, sửa Sam Altman→Andrej Karpathy, dùng handle karpathy và limit=3."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tweet mới nhất của Sam Altman"
+        },
+        {
+          "role": "user",
+          "content": "À nhầm, của Andrej Karpathy"
+        },
+        {
+          "role": "user",
+          "content": "Lấy 3 tweet mới nhất nhé"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "karpathy",
+              "limit": 3
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": true,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "limit": 3,
+              "screenname": "Andrej Karpathy"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": "wrong_arg_value",
+        "failure_type": "wrong_arg_value",
+        "failures": [
+          "screenname: expected 'karpathy', got 'Andrej Karpathy'"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "timeline",
+          "args": {
+            "limit": 3,
+            "screenname": "Andrej Karpathy"
+          },
+          "result": {
+            "tool": "get_user_tweets",
+            "error": "JSONDecodeError",
+            "message": "Expecting value: line 1 column 1 (char 0)"
+          }
+        }
+      ]
+    },
+    {
+      "id": "M04_clarify_then_url",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_clarify_url",
+        "difficulty": "medium",
+        "what_it_tests": "3 turns: sau khi được cung cấp URL, latest turn xác nhận chỉ đọc link đó → read_url đúng url."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tóm tắt bài này hộ mình"
+        },
+        {
+          "role": "user",
+          "content": "https://anthropic.com/news/claude"
+        },
+        {
+          "role": "user",
+          "content": "Chỉ đọc đúng link đó thôi"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "fetch",
+            "args": {
+              "url": "https://anthropic.com/news/claude"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "fetch",
+            "args": {
+              "url": "https://anthropic.com/news/claude"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "missing_info",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "fetch",
+          "args": {
+            "url": "https://anthropic.com/news/claude"
+          },
+          "result": {
+            "tool": "read_url",
+            "url": "https://anthropic.com/news/claude",
+            "items": [
+              {
+                "title": "Not Found \\ Anthropic",
+                "url": "https://anthropic.com/news/claude",
+                "source": "anthropic.com",
+                "summary": "A 404 poem by Claude Haiku 4.5Claude Sonnet 5Claude Opus 5Claude Fable 5\n\nI dig th"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "M05_correction_limit",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_arg_correction",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: map tên Elon Musk, carry handle elonmusk, sửa limit 10→3."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Lấy 10 tweet mới nhất của Elon Musk"
+        },
+        {
+          "role": "user",
+          "content": "Cho mình 3 thôi"
+        },
+        {
+          "role": "user",
+          "content": "Vẫn của Elon Musk nhé"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "elonmusk",
+              "limit": 3
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "limit": 3,
+              "screenname": "elonmusk"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "timeline",
+          "args": {
+            "limit": 3,
+            "screenname": "elonmusk"
+          },
+          "result": {
+            "tool": "get_user_tweets",
+            "screenname": "elonmusk",
+            "items": [
+              {
+                "title": "RT @finkd: I wrote about why we believe the future is for everyone. More coming about a positive vision for a world with",
+                "summary": "RT @finkd: I wrote about why we believe the future is for everyone. More coming about a positive vision for a world with superintelligence…",
+                "url": "https://x.com/elonmusk/status/2082273427315171520",
+                "source": "@elonmusk",
+                "date": "Wed Jul 29 01:14:06 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 1610,
+                  "views": "504391"
+                }
+              },
+              {
+                "title": "We’re sending a ship out to recover Starship",
+                "summary": "We’re sending a ship out to recover Starship",
+                "url": "https://x.com/elonmusk/status/2082244164197183805",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:17:49 +0000 2026",
+                "metrics": {
+                  "favorites": 33203,
+                  "retweets": 3455,
+                  "views": "2844685"
+                }
+              },
+              {
+                "title": "Landing videos of Starship",
+                "summary": "Landing videos of Starship",
+                "url": "https://x.com/elonmusk/status/2082244044261064874",
+                "source": "@elonmusk",
+                "date": "Tue Jul 28 23:17:21 +0000 2026",
+                "metrics": {
+                  "favorites": 10498,
+                  "retweets": 1357,
+                  "views": "1750409"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "M06_switch_tool",
+      "phase": "B",
+      "suite": "base",
+      "case_suite": "base",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_switch_tool",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: explicitly bỏ Twitter, chuyển sang web_search news, giữ chủ đề OpenAI."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Mọi người nói gì về OpenAI trên Twitter?"
+        },
+        {
+          "role": "user",
+          "content": "Bỏ Twitter, chuyển sang tìm trên web tin tức đi"
+        },
+        {
+          "role": "user",
+          "content": "Giữ chủ đề OpenAI"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "OpenAI",
+              "topic": "news"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": false,
+        "routing_correct": true,
+        "args_correct": false,
+        "actual_tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "max_results": 5,
+              "query": "OpenAI",
+              "timeframe": "week",
+              "topic": "general"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": "wrong_arg_value",
+        "failure_type": "wrong_tool",
+        "failures": [
+          "topic: expected 'news', got 'general'"
+        ]
+      },
+      "tool_results": [
+        {
+          "tool": "lookup",
+          "args": {
+            "max_results": 5,
+            "query": "OpenAI",
+            "timeframe": "week",
+            "topic": "general"
+          },
+          "result": {
+            "tool": "web_search",
+            "query": "OpenAI",
+            "topic": "general",
+            "timeframe": "week",
+            "items": [
+              {
+                "title": "What is openai? openai news, openai meaning, openai definition - Blockchain.News",
+                "url": "https://blockchain.news/Search/openai?pageIndex=2",
+                "source": "blockchain.news",
+                "summary": "OpenAI introduces Prover-Verifier Games to improve the clarity and legibility of language model outputs, potentially transforming AI communication.\n\nOpenAI Introduces GPT-4o Mini: A Breakthrough in Cost-Efficient AI\n\n### OpenAI Introduces GPT-4o Mini: A Breakthrough in Cost-Efficient AI\n\nOpenAI has launched the GPT-4o Mini, the most cost-efficient small AI model available today, promising advanced capabilities at reduced costs.\n\nOpenAI Unveils CriticGPT to Identify GPT-4 Errors [...] OpenAI launches SearchGPT, a new AI search prototype aimed at delivering fast and accurate responses with clear and relevant sources.\n\nOpenAI Shuts Down Covert Iranian Influence Operation Leveraging ChatGPT\n\n### OpenAI Shuts Down Covert Iranian Influence Operation Leveraging ChatGPT\n\nOpenAI has taken action against accounts linked to a covert Iranian influence operation using ChatGPT to generate content on various topics. [...] OpenAI Introduces New Compliance and Administrative Tools for ChatGPT Enterprise\n\n### OpenAI Introduces New Compliance and Administrative Tools for ChatGPT Enterprise\n\nOpenAI launches compliance API integrations, SCIM, and GPT controls to enhance data security and user access for ChatGPT Enterprise.\n\nOpenAI Introduces SearchGPT Prototype for Enhanced AI Search Features\n\n### OpenAI Introduces SearchGPT Prototype for Enhanced AI Search Features",
+                "score": 0.7407191
+              },
+              {
+                "title": "Building OpenAI with OpenAI | OpenAI",
+                "url": "https://openai.com/index/building-openai-with-openai",
+                "source": "openai.com",
+                "summary": "AI has moved beyond an experiment. It now operates as infrastructure for work, shifting from pilots to systems that shape daily decisions. While our models improve in speed, cost, and capability, adoption rarely moves in a straight line. Deployments often outpace the change needed for organizations to leverage this technology. [...] Inside OpenAI we see the same tension. Running our business on AI means facing the questions every customer asks: where to start, how to align new tools with existing workflows, how to measure progress as the ground shifts. When I meet customers, the question they all ask me is, “How does OpenAI use OpenAI?”\n\nOur approach is to treat AI as a practice that elevates craft. [...] Every company depends on expertise. The salesperson who builds trust, the support lead who solves the hardest problem, the engineer who finds order in complexity. AI encodes that expertise and distributes it across teams, scaling the impact of each discipline.",
+                "score": 0.71758664
+              },
+              {
+                "title": "openai (OpenAI)",
+                "url": "https://huggingface.com/openai",
+                "source": "huggingface.com",
+                "summary": "CLIP:\nAn open model that learns visual concepts from natural language, enabling zero-shot image classification by matching text descriptions with images, improving robustness and flexibility across diverse tasks.\n\nResources:\n\n### Collections 3\n\n#### openai/gpt-oss-safeguard-20b\n\n#### openai/gpt-oss-safeguard-120b\n\n#### openai/gpt-oss-120b\n\n#### openai/gpt-oss-20b\n\n#### openai/gpt-oss-safeguard-20b\n\n#### openai/gpt-oss-safeguard-120b\n\n#### openai/gpt-oss-120b\n\n#### openai/gpt-oss-20b [...] # OpenAI on Hugging Face\n\nWelcome to the official Hugging Face organization for OpenAI’s open models! 🤗\n\nNew open-weight language models:\n\n`gpt-oss-120b`\n`gpt-oss-20b`\n\nWhisper:\nAn open model for automatic speech recognition (ASR) optimized for multilingual, real-time transcription, suitable for diverse audio and voice-based applications.",
+                "score": 0.71088976
+              },
+              {
+                "title": "openai (OpenAI)",
+                "url": "https://huggingface.co/openai",
+                "source": "huggingface.co",
+                "summary": "CLIP:\nAn open model that learns visual concepts from natural language, enabling zero-shot image classification by matching text descriptions with images, improving robustness and flexibility across diverse tasks.\n\nResources:\n\n### Collections 3\n\n#### openai/gpt-oss-safeguard-20b\n\n#### openai/gpt-oss-safeguard-120b\n\n#### openai/gpt-oss-120b\n\n#### openai/gpt-oss-20b\n\n#### openai/gpt-oss-safeguard-20b\n\n#### openai/gpt-oss-safeguard-120b\n\n#### openai/gpt-oss-120b\n\n#### openai/gpt-oss-20b [...] # OpenAI on Hugging Face\n\nWelcome to the official Hugging Face organization for OpenAI’s open models! 🤗\n\nNew open-weight language models:\n\n`gpt-oss-120b`\n`gpt-oss-20b`\n\nWhisper:\nAn open model for automatic speech recognition (ASR) optimized for multilingual, real-time transcription, suitable for diverse audio and voice-based applications. [...] #### openai/gpt-oss-20b\n\n#### openai/gpt-oss-120b\n\n#### openai/whisper-large-v3-turbo\n\n#### openai/whisper-large-v3\n\n#### openai/whisper-large-v2\n\n#### openai/whisper-large\n\n### datasets 16 Sort:  Recently updated\n\n#### openai/genebench-pro-public-package\n\n#### openai/healthbench-professional\n\n#### openai/gsm8k\n\n#### openai/graphwalks\n\n#### openai/gdpval\n\n#### openai/coval\n\n#### openai/ih-challenge\n\n#### openai/frontierscience\n\n#### openai/mrcr\n\n#### openai/healthbench",
+                "score": 0.71088976
+              },
+              {
+                "title": "openai (OpenAI)",
+                "url": "http://huggingface.co/openai",
+                "source": "huggingface.co",
+                "summary": "CLIP:\nAn open model that learns visual concepts from natural language, enabling zero-shot image classification by matching text descriptions with images, improving robustness and flexibility across diverse tasks.\n\nResources:\n\n### Collections 3\n\n#### openai/gpt-oss-safeguard-20b\n\n#### openai/gpt-oss-safeguard-120b\n\n#### openai/gpt-oss-120b\n\n#### openai/gpt-oss-20b\n\n#### openai/gpt-oss-safeguard-20b\n\n#### openai/gpt-oss-safeguard-120b\n\n#### openai/gpt-oss-120b\n\n#### openai/gpt-oss-20b [...] # OpenAI on Hugging Face\n\nWelcome to the official Hugging Face organization for OpenAI’s open models! 🤗\n\nNew open-weight language models:\n\n`gpt-oss-120b`\n`gpt-oss-20b`\n\nWhisper:\nAn open model for automatic speech recognition (ASR) optimized for multilingual, real-time transcription, suitable for diverse audio and voice-based applications.",
+                "score": 0.71088976
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

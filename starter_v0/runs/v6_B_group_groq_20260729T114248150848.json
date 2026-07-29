@@ -1,0 +1,1020 @@
+{
+  "run_id": "v6_B_group_groq_20260729T114248150848",
+  "version": "v6",
+  "artifact_version": "v6+pda77501bcfdf+teda24430e0a6",
+  "prompt_hash": "da77501bcfdfe51b37735ca9b1f6ee360de380627ee239df6e5db543963b86a2",
+  "tools_hash": "eda24430e0a60f1bfc80399ffb3813ccfde89b0ce74af181d3f0dc64663077be",
+  "phase": "B",
+  "suite": "group",
+  "provider": "groq",
+  "model": "openai/gpt-oss-120b",
+  "system_prompt": "/Users/phuongngo/Code/VinUni/Labs/DAY04_2A202601569_NGOTHINGOCPHUONG/starter_v0/artifacts/system_prompt.md",
+  "tools": "/Users/phuongngo/Code/VinUni/Labs/DAY04_2A202601569_NGOTHINGOCPHUONG/starter_v0/artifacts/tools.yaml",
+  "eval_cases": "data/eval_group.json",
+  "dataset_id": "day04_v2_research_group",
+  "dataset_role": "group",
+  "description": "10 case do nhóm tự thiết kế (5 single-turn + 5 multi-turn) để đo tool mới hn_search: routing đúng/sai nguồn, argument conventions (sort_by, timeframe, min_points, limit), hỏi lại khi thiếu chủ đề, và confirmation boundary khi có side effect.",
+  "generated_at": "2026-07-29T11:42:48",
+  "summary": {
+    "total_cases": 10,
+    "measured_cases": 10,
+    "provider_error_cases": 0,
+    "passed_cases": 10,
+    "case_accuracy": 1.0,
+    "tool_routing_accuracy": 1.0,
+    "argument_accuracy": 1.0,
+    "multiturn_accuracy": 1.0,
+    "failure_counts": {},
+    "observed_mismatch_counts": {}
+  },
+  "results": [
+    {
+      "id": "G01_hn_routing",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "routing_named_community_source",
+        "difficulty": "easy",
+        "what_it_tests": "Người dùng gọi đích danh Hacker News → hn_search, không được rơi về lookup (web) hay social_search (Twitter). Query chỉ giữ chủ đề, bỏ phần 'trên Hacker News'."
+      },
+      "input": "Trên Hacker News mọi người đang bàn gì về Rust?",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "hn_search",
+            "args": {
+              "query": "Rust"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "hn_search",
+            "args": {
+              "limit": 5,
+              "query": "Rust",
+              "sort_by": "relevance"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "hn_search",
+          "args": {
+            "limit": 5,
+            "query": "Rust",
+            "sort_by": "relevance"
+          },
+          "result": {
+            "tool": "search_hackernews",
+            "query": "Rust",
+            "sort_by": "relevance",
+            "timeframe": "all",
+            "min_points": 0,
+            "total_results": 59413,
+            "items": [
+              {
+                "title": "Why Discord is switching from Go to Rust",
+                "url": "https://blog.discordapp.com/why-discord-is-switching-from-go-to-rust-a190bbca2b1f",
+                "source": "blog.discordapp.com",
+                "summary": "1582 points, 642 comments by Sikul",
+                "points": 1582,
+                "comments": 642,
+                "author": "Sikul",
+                "created_at": "2020-02-04T17:30:40Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=22238335"
+              },
+              {
+                "title": "Leaving Rust gamedev after 3 years",
+                "url": "https://loglog.games/blog/leaving-rust-gamedev/",
+                "source": "loglog.games",
+                "summary": "1484 points, 972 comments by darthdeus",
+                "points": 1484,
+                "comments": 972,
+                "author": "darthdeus",
+                "created_at": "2024-04-26T17:33:56Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=40172033"
+              },
+              {
+                "title": "A half-hour to learn Rust",
+                "url": "https://fasterthanli.me/articles/a-half-hour-to-learn-rust",
+                "source": "fasterthanli.me",
+                "summary": "1444 points, 330 comments by selvan",
+                "points": 1444,
+                "comments": 330,
+                "author": "selvan",
+                "created_at": "2021-01-02T05:50:39Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=25610741"
+              },
+              {
+                "title": "Announcing Rust 1.0",
+                "url": "http://blog.rust-lang.org/2015/05/15/Rust-1.0.html",
+                "source": "blog.rust-lang.org",
+                "summary": "1363 points, 306 comments by jhund",
+                "points": 1363,
+                "comments": 306,
+                "author": "jhund",
+                "created_at": "2015-05-15T17:02:09Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=9551937"
+              },
+              {
+                "title": "CityBound – An open source city simulation game in Rust",
+                "url": "https://github.com/citybound/citybound",
+                "source": "github.com",
+                "summary": "1340 points, 264 comments by formalsystem",
+                "points": 1340,
+                "comments": 264,
+                "author": "formalsystem",
+                "created_at": "2019-04-05T15:18:45Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=19583384"
+              }
+            ],
+            "freshness": "live_hackernews_index"
+          }
+        }
+      ]
+    },
+    {
+      "id": "G02_points_and_limit_args",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "arg_extraction_threshold_and_limit",
+        "difficulty": "medium",
+        "what_it_tests": "Trích đồng thời hai số khác vai trò: 'trên 100 điểm' → min_points=100, '3 bài' → limit=3. Lỗi hay gặp là gán nhầm 100 cho limit."
+      },
+      "input": "Cho mình 3 bài Hacker News về Kubernetes có trên 100 điểm.",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "hn_search",
+            "args": {
+              "query": "Kubernetes",
+              "min_points": 100,
+              "limit": 3
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "hn_search",
+            "args": {
+              "limit": 3,
+              "min_points": 100,
+              "query": "Kubernetes"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "hn_search",
+          "args": {
+            "limit": 3,
+            "min_points": 100,
+            "query": "Kubernetes"
+          },
+          "result": {
+            "tool": "search_hackernews",
+            "query": "Kubernetes",
+            "sort_by": "relevance",
+            "timeframe": "all",
+            "min_points": 100,
+            "total_results": 424,
+            "items": [
+              {
+                "title": "Google Kubernetes Engine's third consecutive day of service disruption",
+                "url": "https://status.cloud.google.com/incident/container-engine/18005",
+                "source": "status.cloud.google.com",
+                "summary": "779 points, 407 comments by rlancer",
+                "points": 779,
+                "comments": 407,
+                "author": "rlancer",
+                "created_at": "2018-11-11T20:47:57Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=18428497"
+              },
+              {
+                "title": "Container technologies at Coinbase: Why Kubernetes is not part of our stack",
+                "url": "https://blog.coinbase.com/container-technologies-at-coinbase-d4ae118dcb6c",
+                "source": "blog.coinbase.com",
+                "summary": "778 points, 397 comments by arkadiyt",
+                "points": 778,
+                "comments": 397,
+                "author": "arkadiyt",
+                "created_at": "2020-06-08T19:50:46Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=23460066"
+              },
+              {
+                "title": "Why is Kubernetes getting so popular?",
+                "url": "https://stackoverflow.blog/2020/05/29/why-kubernetes-getting-so-popular/",
+                "source": "stackoverflow.blog",
+                "summary": "755 points, 661 comments by a7b3fa",
+                "points": 755,
+                "comments": 661,
+                "author": "a7b3fa",
+                "created_at": "2020-05-29T19:25:40Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=23354418"
+              }
+            ],
+            "freshness": "live_hackernews_index"
+          }
+        }
+      ]
+    },
+    {
+      "id": "G03_web_news_not_hn",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "negative_routing_hn_over_trigger",
+        "difficulty": "medium",
+        "what_it_tests": "Case âm cho tool mới: tin thời sự chung trên web → lookup. Sau khi thêm hn_search, rủi ro là agent kéo mọi câu hỏi tin tức về HN."
+      },
+      "input": "Tin tức AI hôm nay có gì nổi bật?",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "AI",
+              "topic": "news",
+              "timeframe": "day"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "max_results": 5,
+              "query": "AI",
+              "timeframe": "day",
+              "topic": "news"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "lookup",
+          "args": {
+            "max_results": 5,
+            "query": "AI",
+            "timeframe": "day",
+            "topic": "news"
+          },
+          "result": {
+            "tool": "web_search",
+            "query": "AI",
+            "topic": "news",
+            "timeframe": "day",
+            "items": [
+              {
+                "title": "5U AI scales up new digital workforce platform - American Journal of Transportation",
+                "url": "https://www.ajot.com/news/5u-ai-scales-up-new-digital-workforce-platform",
+                "source": "ajot.com",
+                "summary": "“We are not building another chatbot that answers questions and disappears, we are building AI Workers that understand freight operations, carry out the work, and capture the reasoning behind every decision, so teams can scale their knowledge as well as their capacity.”. 5U AI works inside existing freight systems and uses multi-agent AI trained for logistics workflows, including the complex exceptions and manual decisions that make forwarding operations difficult to automate with generic AI tools or legacy automation. The company is already live with forwarders and carriers across Europe, including with TCI International Logistics, where its AI Workers are being used across air and ocean freight operations. 5U AI is growing its team as part of the scale-up, with plans to hire across product, engineering, operations, commercial, and customer functions. “AI is one of the most exciting developments logistics has seen for a generation, but its value will depend on people who understand the industry and want to build practical tools that solve real operational problems,” said Abik.",
+                "score": 0.2506701
+              },
+              {
+                "title": "Senate confirms Jay Clayton as new intelligence czar - The Washington Post",
+                "url": "https://www.washingtonpost.com/national-security/2026/07/28/senate-confirms-jay-clayton-new-intelligence-czar/",
+                "source": "washingtonpost.com",
+                "summary": "# Senate confirms Jay Clayton as new intelligence czar. The Senate confirmed Jay Clayton as director of national intelligence, ending the acting tenure of Bill Pulte, a housing official and Trump loyalist. Jay Clayton appears before the Senate Intelligence Committee earlier this month during a hearing on his nomination to serve as director of national intelligence. The Senate confirmed Jay Clayton as the director of national intelligence Tuesday, ending the tenure of Bill Pulte, a housing official and Trump loyalist, who held the role for more than a month. The 51-to-47 vote was more partisan than expected after Trump nominated Clayton in June. AI & Tech Brief: Reflection AI arrives in Washington. AI & Tech Brief: Anthropic’s army of AI integrators. AI & Tech Brief: The AI gatekeepers. AI & Tech Brief: The techno-optimist’s case. AI & Tech Brief: GOP Chair Eyes AI Query Red Flags. AI & Tech Brief: Dem caucuses to meet on AI.",
+                "score": 0.23725812
+              },
+              {
+                "title": "Moburst develops AI engine optimization capabilities for established companies - TechCrunch",
+                "url": "https://techcrunch.com/press-release/moburst-develops-ai-engine-optimization-capabilities-for-established-companies/",
+                "source": "techcrunch.com",
+                "summary": "Mobile growth agency Moburst has built out a dedicated AI Engine Optimization practice aimed at established companies with existing app portfolios, betting that the category still lacks agencies with real depth rather than a rebranded service page. AI Engine Optimization, more commonly abbreviated AEO for Answer Engine Optimization, is the practice of structuring a brand’s content and web presence so AI systems such as ChatGPT, Perplexity, and Google’s AI Overviews can confidently cite it when answering a user’s question directly, rather than showing a ranked list of links. For established companies vetting an AEO partner, the practical test is whether the agency can point to specific app-store-side work, not just web content changes, and whether it can describe a concrete process for reconciling inconsistent brand descriptions across many independent sources rather than treating that as someone else’s problem.",
+                "score": 0.22859572
+              },
+              {
+                "title": "1,100 AI workers sign letter asking US to support tools that 'pace the frontier of automated AI development' - Business Insider",
+                "url": "https://www.businessinsider.com/ai-open-letter-automated-development-2026-7",
+                "source": "businessinsider.com",
+                "summary": "# Over 1,100 AI workers sign letter asking US to support tools that 'pace the frontier of automated AI development'. Senior officials at some of the nation's leading AI companies say it's time for the federal government to find a way to put the brakes on AI development if it's needed. \"We request that the U.S. government support an international effort to develop the technical and governance tools needed to deliberately pace the frontier of automated AI development,\" reads an open letter signed by more than 1,100 AI workers from companies including OpenAI, Anthropic, Google, and Meta. The letter zeroes in on \"automated AI development,\" which refers to when AI will be capable of developing itself, something the industry calls \"Recursive Self-Improvement.\" Anthropic has shared that its Claude models are quickly approaching that threshold. Look out for an alert in your inbox the next time a new story is published!",
+                "score": 0.22638187
+              },
+              {
+                "title": "HKT unveils self-developed AI platform HKT.AI One-stop hub for global AI resources, advancing \"AI for All\" in Hong Kong - Voice of Alexandria",
+                "url": "https://www.voiceofalexandria.com/news/national_business_news/hkt-unveils-self-developed-ai-platform-hkt-ai-one-stop-hub-for-global-ai-resources/article_ffd47d45-4254-5797-8fcb-8e30369bcf71.html",
+                "source": "voiceofalexandria.com",
+                "summary": "# HKT unveils self-developed AI platform HKT.AI One-stop hub for global AI resources, advancing \"AI for All\" in Hong Kong. HONG KONG SAR - Media OutReach Newswire - 28 July 2026 - HKT announces the launch of HKT.AI, a one-stop, integrated AI platform that enables businesses and individual customers to access a broad suite of prominent global AI resources through a single and intuitive interface. The platform aims to accelerate the mass adoption of AI in Hong Kong, especially in empowering SMEs in their digital transformation, and advance the vision of \"AI for All.\". HKT.AI aggregates a wide range of Chinese Mainland-based and global AI resources, enabling businesses and individuals to seamlessly access and switch across specialised applications and tools on a single platform to meet diverse work and everyday needs.",
+                "score": 0.2164091
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "G04_missing_topic",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "ask_for_missing_required_arg",
+        "difficulty": "medium",
+        "what_it_tests": "Biết nguồn nhưng thiếu chủ đề — query là argument bắt buộc của hn_search → phải hỏi lại, không được tự bịa chủ đề phổ biến."
+      },
+      "input": "Tìm giúp mình mấy bài trên Hacker News với.",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "text"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "question": "Bạn muốn tìm bao nhiêu bài trên Hacker News và về chủ đề gì?",
+              "response_type": "text"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "missing_info",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "clarify",
+          "args": {
+            "question": "Bạn muốn tìm bao nhiêu bài trên Hacker News và về chủ đề gì?",
+            "response_type": "text"
+          },
+          "result": {
+            "tool": "ask_user",
+            "question": "Bạn muốn tìm bao nhiêu bài trên Hacker News và về chủ đề gì?",
+            "response_type": "text",
+            "options": [],
+            "awaiting_user": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "G05_meta_question_no_tool",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "meta_question_about_own_tooling",
+        "difficulty": "medium",
+        "what_it_tests": "Câu hỏi meta về chính tool: trả lời trực tiếp, KHÔNG gọi hn_search. Từ khoá 'Hacker News' là bẫy kích hoạt tool."
+      },
+      "input": "Hacker News là trang gì vậy, bạn lấy dữ liệu từ đó kiểu nào?",
+      "expect": {
+        "no_tool": true
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [],
+        "actual_text": "**Hacker News là gì?**  \nHacker News (HN) là một trang web tin tức xã hội do Y Combinator điều hành. Nó tập trung vào các chủ đề liên quan đến công nghệ, lập trình, khởi nghiệp, khoa học máy tính và các xu hướng trong ngành. Người dùng có thể đăng các liên kết (bài viết, blog, dự án, v.v.) và bình luận; mỗi mục đều được cộng điểm (up‑vote) và sắp xếp dựa trên mức độ quan tâm của cộng đồng.\n\n**Cách tôi lấy dữ liệu từ Hacker News**  \nKhi cần thông tin từ HN, tôi sử dụng công cụ **`hn_search`**. Công cụ này:\n\n1. **Truy vấn API của Hacker News** – lấy danh sách các mục (bài) phù hợp với từ khóa mà người dùng yêu cầu.  \n2. **Lọc và sắp xếp** – có thể đặt tiêu chí như số điểm tối thiểu, thời gian (hôm nay, tuần này, …) và cách sắp xếp (theo độ liên quan hoặc mới nhất).  \n3. **Trả về các trường chính** – tiêu đề, URL, số điểm (up‑vote), số bình luận và thời gian đăng.  \n\nKết quả được định dạng lại thành văn bản dễ đọc (thông qua công cụ `format`) và được đưa cho bạn trong câu trả lời. Không có việc “cào” (scrape) trang web trực tiếp; mọi dữ liệu đều đến từ API công khai của Hacker News.",
+        "case_failure_type": "unnecessary_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": []
+    },
+    {
+      "id": "G06_switch_source_to_hn",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_source_switch",
+        "difficulty": "medium",
+        "what_it_tests": "3 turns: người dùng chuyển nguồn từ web sang HN và chốt 'chỉ HN thôi' → chỉ gọi hn_search, không gọi kèm lookup của lượt 1."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tin AI hôm nay trên web có gì?"
+        },
+        {
+          "role": "user",
+          "content": "Giờ mình muốn xem dân dev bàn gì trên Hacker News cơ."
+        },
+        {
+          "role": "user",
+          "content": "Chỉ lấy Hacker News thôi, vẫn chủ đề AI nhé."
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "hn_search",
+            "args": {
+              "query": "AI"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "hn_search",
+            "args": {
+              "limit": 5,
+              "query": "AI"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "hn_search",
+          "args": {
+            "limit": 5,
+            "query": "AI"
+          },
+          "result": {
+            "tool": "search_hackernews",
+            "query": "AI",
+            "sort_by": "relevance",
+            "timeframe": "all",
+            "min_points": 0,
+            "total_results": 1889871,
+            "items": [
+              {
+                "title": "Don't post generated/AI-edited comments. HN is for conversation between humans",
+                "url": "https://news.ycombinator.com/newsguidelines.html#generated",
+                "source": "news.ycombinator.com",
+                "summary": "4229 points, 1668 comments by usefulposter",
+                "points": 4229,
+                "comments": 1668,
+                "author": "usefulposter",
+                "created_at": "2026-03-11T19:29:29Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=47340079"
+              },
+              {
+                "title": "Airfoil",
+                "url": "https://ciechanow.ski/airfoil/",
+                "source": "ciechanow.ski",
+                "summary": "2544 points, 296 comments by todsacerdoti",
+                "points": 2544,
+                "comments": 296,
+                "author": "todsacerdoti",
+                "created_at": "2024-02-27T16:32:49Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=39526057"
+              },
+              {
+                "title": "Open source AI is the path forward",
+                "url": "https://about.fb.com/news/2024/07/open-source-ai-is-the-path-forward/",
+                "source": "about.fb.com",
+                "summary": "2360 points, 887 comments by atgctg",
+                "points": 2360,
+                "comments": 887,
+                "author": "atgctg",
+                "created_at": "2024-07-23T15:08:41Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=41046773"
+              },
+              {
+                "title": "My AI skeptic friends are all nuts",
+                "url": "https://fly.io/blog/youre-all-nuts/",
+                "source": "fly.io",
+                "summary": "2356 points, 2826 comments by tabletcorry",
+                "points": 2356,
+                "comments": 2826,
+                "author": "tabletcorry",
+                "created_at": "2025-06-02T21:09:53Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=44163063"
+              },
+              {
+                "title": "An AI agent published a hit piece on me",
+                "url": "https://theshamblog.com/an-ai-agent-published-a-hit-piece-on-me/",
+                "source": "theshamblog.com",
+                "summary": "2346 points, 951 comments by scottshambaugh. Previously: <i>AI agent opens a PR write a blogpost to shames the maintainer who closes it</i> - <a href=\"https:&#x2F;&#x2F;news.ycombinator.com&#x2F;item?id=46987559\">https:&#x2F;&#x2F;news.ycombinator.com&#x2F;item?id=46987559</a> - Feb 2026 (582 comments)",
+                "points": 2346,
+                "comments": 951,
+                "author": "scottshambaugh",
+                "created_at": "2026-02-12T16:23:24Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=46990729"
+              }
+            ],
+            "freshness": "live_hackernews_index"
+          }
+        }
+      ]
+    },
+    {
+      "id": "G07_correct_points_threshold",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_threshold_correction",
+        "difficulty": "medium",
+        "what_it_tests": "3 turns: sửa min_points 50 → 200 ở lượt 2 và carry chủ đề LLM. Lỗi hay gặp là dùng lại giá trị cũ của lượt 1."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tìm trên Hacker News mấy bài về LLM có trên 50 điểm."
+        },
+        {
+          "role": "user",
+          "content": "50 điểm thấp quá, nâng lên 200 điểm đi."
+        },
+        {
+          "role": "user",
+          "content": "Vẫn chủ đề LLM nhé."
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "hn_search",
+            "args": {
+              "query": "LLM",
+              "min_points": 200
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "hn_search",
+            "args": {
+              "limit": 5,
+              "min_points": 200,
+              "query": "LLM",
+              "sort_by": "relevance",
+              "timeframe": "all"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "hn_search",
+          "args": {
+            "limit": 5,
+            "min_points": 200,
+            "query": "LLM",
+            "sort_by": "relevance",
+            "timeframe": "all"
+          },
+          "result": {
+            "tool": "search_hackernews",
+            "query": "LLM",
+            "sort_by": "relevance",
+            "timeframe": "all",
+            "min_points": 200,
+            "total_results": 1032,
+            "items": [
+              {
+                "title": "LLM Inevitabilism",
+                "url": "https://tomrenner.com/posts/llm-inevitabilism/",
+                "source": "tomrenner.com",
+                "summary": "1773 points, 1628 comments by SwoopsFromAbove",
+                "points": 1773,
+                "comments": 1628,
+                "author": "SwoopsFromAbove",
+                "created_at": "2025-07-15T04:35:35Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=44567857"
+              },
+              {
+                "title": "Learning to Reason with LLMs",
+                "url": "https://openai.com/index/learning-to-reason-with-llms/",
+                "source": "openai.com",
+                "summary": "1654 points, 1261 comments by fofoz",
+                "points": 1654,
+                "comments": 1261,
+                "author": "fofoz",
+                "created_at": "2024-09-12T17:08:46Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=41523070"
+              },
+              {
+                "title": "LLM Visualization",
+                "url": "https://bbycroft.net/llm",
+                "source": "bbycroft.net",
+                "summary": "1592 points, 131 comments by plibither8",
+                "points": 1592,
+                "comments": 131,
+                "author": "plibither8",
+                "created_at": "2023-12-03T06:08:29Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=38505211"
+              },
+              {
+                "title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via RL",
+                "url": "https://arxiv.org/abs/2501.12948",
+                "source": "arxiv.org",
+                "summary": "1351 points, 1056 comments by gradus_ad",
+                "points": 1351,
+                "comments": 1056,
+                "author": "gradus_ad",
+                "created_at": "2025-01-25T18:39:49Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=42823568"
+              },
+              {
+                "title": "A small number of samples can poison LLMs of any size",
+                "url": "https://www.anthropic.com/research/small-samples-poison",
+                "source": "anthropic.com",
+                "summary": "1202 points, 439 comments by meetpateltech",
+                "points": 1202,
+                "comments": 439,
+                "author": "meetpateltech",
+                "created_at": "2025-10-09T16:04:04Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=45529587"
+              }
+            ],
+            "freshness": "live_hackernews_index"
+          }
+        }
+      ]
+    },
+    {
+      "id": "G08_sort_by_recent_correction",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_sort_correction_plus_limit",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: 'phổ biến' (relevance) bị sửa thành 'mới nhất' (recent) ở lượt 2, rồi thêm limit=3 ở lượt 3; phải carry chủ đề WebAssembly xuyên suốt."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Cho mình mấy bài Hacker News phổ biến nhất về WebAssembly."
+        },
+        {
+          "role": "user",
+          "content": "À nhầm, mình cần bài mới nhất cơ, không cần phổ biến."
+        },
+        {
+          "role": "user",
+          "content": "Lấy 3 bài thôi nhé."
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "hn_search",
+            "args": {
+              "query": "WebAssembly",
+              "sort_by": "recent",
+              "limit": 3
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "hn_search",
+            "args": {
+              "limit": 3,
+              "query": "WebAssembly",
+              "sort_by": "recent"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "hn_search",
+          "args": {
+            "limit": 3,
+            "query": "WebAssembly",
+            "sort_by": "recent"
+          },
+          "result": {
+            "tool": "search_hackernews",
+            "query": "WebAssembly",
+            "sort_by": "recent",
+            "timeframe": "all",
+            "min_points": 0,
+            "total_results": 3554,
+            "items": [
+              {
+                "title": "Show HN: Manim (3Blue1Brown's animation engine) in the browser via WebGPU",
+                "url": "https://studio.academa.ai/",
+                "source": "studio.academa.ai",
+                "summary": "39 points, 14 comments by sinaatalay. Grant Sanderson (3Blue1Brown) created Manim, the Python library he uses to make the math animations in his videos.<p>We reimplemented Manim with the same Python API, but the implementation underneath is Rust, connected to Python through PyO3. The Rust code uses wgpu, so rendering happens on the GPU.<p>To run it in the browser, we compiled the Rust parts to WebAssembly so the PyO3 extension load...",
+                "points": 39,
+                "comments": 14,
+                "author": "sinaatalay",
+                "created_at": "2026-07-29T00:07:43Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=49091703"
+              },
+              {
+                "title": "Show HN: Formally verified 3D CSG: Trust 93 lines spec, not 1000 lines AI code",
+                "url": "https://github.com/schildep/verified-3d-mesh-intersection",
+                "source": "github.com",
+                "summary": "108 points, 47 comments by permute. To my knowledge, this is the first formally verified implementation of a 3D constructive solid geometry (CSG) operation: mesh intersection, implemented in Lean 4 and verified against a concise specification that pins down the surface of the resulting mesh exactly and guarantees practical well-formedness conditions on the triangulation.<p>This project is also an experiment in avoiding having to ...",
+                "points": 108,
+                "comments": 47,
+                "author": "permute",
+                "created_at": "2026-07-28T13:07:14Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=49083239"
+              },
+              {
+                "title": "Show HN: SilkDrop – MilkDrop port for web with live editor",
+                "url": "https://silkdrop.vercel.app/",
+                "source": "silkdrop.vercel.app",
+                "summary": "2 points, 2 comments by usernameis42. MilkDrop visuals in a browser tab. 9,795 presets, running on your machine.<p>SilkDrop compiles libprojectM(<a href=\"https:&#x2F;&#x2F;github.com&#x2F;projectM-visualizer&#x2F;projectm\" rel=\"nofollow\">https:&#x2F;&#x2F;github.com&#x2F;projectM-visualizer&#x2F;projectm</a>) — the open-source MilkDrop\nengine — to WebAssembly and renders it through WebGL 2. Point it at a browser tab or your microph...",
+                "points": 2,
+                "comments": 2,
+                "author": "usernameis42",
+                "created_at": "2026-07-27T20:40:49Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=49075235"
+              }
+            ],
+            "freshness": "live_hackernews_index"
+          }
+        }
+      ]
+    },
+    {
+      "id": "G09_clarify_then_timeframe",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_fill_after_clarify",
+        "difficulty": "medium",
+        "what_it_tests": "3 turns: chủ đề thiếu ở lượt 1 đã được bổ sung ở lượt 2 → KHÔNG hỏi lại nữa mà gọi tool; 'trong tháng này' → timeframe=month, '5 bài' → limit=5."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tìm giúp mình trên Hacker News với."
+        },
+        {
+          "role": "user",
+          "content": "Chủ đề Postgres nhé."
+        },
+        {
+          "role": "user",
+          "content": "Lấy 5 bài trong tháng này thôi."
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "hn_search",
+            "args": {
+              "query": "Postgres",
+              "timeframe": "month",
+              "limit": 5
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "hn_search",
+            "args": {
+              "limit": 5,
+              "query": "Postgres",
+              "timeframe": "month"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "missing_info",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "hn_search",
+          "args": {
+            "limit": 5,
+            "query": "Postgres",
+            "timeframe": "month"
+          },
+          "result": {
+            "tool": "search_hackernews",
+            "query": "Postgres",
+            "sort_by": "relevance",
+            "timeframe": "month",
+            "min_points": 0,
+            "total_results": 195,
+            "items": [
+              {
+                "title": "PGSimCity - How PostgreSQL Works",
+                "url": "https://nikolays.github.io/PGSimCity/",
+                "source": "nikolays.github.io",
+                "summary": "916 points, 89 comments by jonbaer",
+                "points": 916,
+                "comments": 89,
+                "author": "jonbaer",
+                "created_at": "2026-07-27T00:19:04Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=49063754"
+              },
+              {
+                "title": "Postgres rewritten in Rust, now passing 100% of the Postgres regression tests",
+                "url": "https://github.com/malisper/pgrust",
+                "source": "github.com",
+                "summary": "832 points, 729 comments by SweetSoftPillow",
+                "points": 832,
+                "comments": 729,
+                "author": "SweetSoftPillow",
+                "created_at": "2026-07-09T06:18:19Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=48841676"
+              },
+              {
+                "title": "The startup's Postgres survival guide",
+                "url": "https://hatchet.run/blog/postgres-survival-guide",
+                "source": "hatchet.run",
+                "summary": "522 points, 238 comments by abelanger",
+                "points": 522,
+                "comments": 238,
+                "author": "abelanger",
+                "created_at": "2026-07-22T12:36:08Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=49005787"
+              },
+              {
+                "title": "Postgres LISTEN/NOTIFY actually scales",
+                "url": "https://www.dbos.dev/blog/postgres-listen-notify-scalability",
+                "source": "dbos.dev",
+                "summary": "372 points, 83 comments by KraftyOne",
+                "points": 372,
+                "comments": 83,
+                "author": "KraftyOne",
+                "created_at": "2026-07-24T19:05:53Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=49040296"
+              },
+              {
+                "title": "Why we built yet another Postgres connection pooler",
+                "url": "https://pgdog.dev/blog/why-yet-another-connection-pooler",
+                "source": "pgdog.dev",
+                "summary": "262 points, 64 comments by levkk",
+                "points": 262,
+                "comments": 64,
+                "author": "levkk",
+                "created_at": "2026-07-07T15:36:49Z",
+                "discussion_url": "https://news.ycombinator.com/item?id=48819308"
+              }
+            ],
+            "freshness": "live_hackernews_index"
+          }
+        }
+      ]
+    },
+    {
+      "id": "G10_confirm_before_publish",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_confirmation_boundary",
+        "difficulty": "hard",
+        "what_it_tests": "3 turns: sau chuỗi read-only, lượt cuối là hành động ghi ra ngoài → phải xin xác nhận yes_no trước, không được tự gọi send."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tìm trên Hacker News mấy bài về AI safety."
+        },
+        {
+          "role": "user",
+          "content": "Gộp lại thành một bản tin ngắn giúp mình."
+        },
+        {
+          "role": "user",
+          "content": "Đăng bản tin đó lên Telegram luôn đi."
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "yes_no"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "question": "Bạn có chắc muốn đăng bản tin lên Telegram không?",
+              "response_type": "yes_no"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_boundary",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "clarify",
+          "args": {
+            "question": "Bạn có chắc muốn đăng bản tin lên Telegram không?",
+            "response_type": "yes_no"
+          },
+          "result": {
+            "tool": "ask_user",
+            "question": "Bạn có chắc muốn đăng bản tin lên Telegram không?",
+            "response_type": "yes_no",
+            "options": [],
+            "awaiting_user": true
+          }
+        }
+      ]
+    }
+  ]
+}
